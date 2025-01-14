@@ -15,7 +15,7 @@ public record RecipeTitle
     {
         if (value.Length is < 3 or > 50)
         {
-            return new Error();
+            return RecipeDomainErrors.TitleLengthOutOfRange;
         }
 
         return new RecipeTitle(value);

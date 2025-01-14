@@ -15,7 +15,7 @@ public record RecipeInstruction
     {
         if (value.Length is < 10 or > 10000)
         {
-            return new Error();
+            return RecipeDomainErrors.InstructionLengthOutOfRange;
         }
 
         return new RecipeInstruction(value);

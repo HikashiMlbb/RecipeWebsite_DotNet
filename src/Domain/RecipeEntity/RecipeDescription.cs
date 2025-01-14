@@ -15,7 +15,7 @@ public record RecipeDescription
     {
         if (value.Length is < 50 or > 10000)
         {
-            return new Error();
+            return RecipeDomainErrors.DescriptionLengthOutOfRange;
         }
 
         return new RecipeDescription(value);

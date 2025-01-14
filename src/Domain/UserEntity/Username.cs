@@ -17,12 +17,12 @@ public record Username
     {
         if (value.Length is < 4 or > 30)
         {
-            return new Error();
+            return UserDomainErrors.UsernameLengthOutOfRange;
         }
 
         if (value.ToCharArray().Any(x => UnallowedSymbols.Contains(x)))
         {
-            return new Error();
+            return UserDomainErrors.UsernameUnallowedSymbols;
         }
 
         return new Username(value);
