@@ -1,3 +1,3 @@
 namespace Domain.UserEntity;
 
-public record Password(string PasswordHash);
+public sealed record Password(string PasswordHash);

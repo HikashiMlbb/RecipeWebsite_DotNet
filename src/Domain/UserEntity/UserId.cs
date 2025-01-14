@@ -1,3 +1,3 @@
 namespace Domain.UserEntity;
 
-public record UserId(int Value);
+public sealed record UserId(int Value);

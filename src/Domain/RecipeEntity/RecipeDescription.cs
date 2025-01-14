@@ -2,7 +2,7 @@ using SharedKernel;
 
 namespace Domain.RecipeEntity;
 
-public record RecipeDescription
+public sealed record RecipeDescription
 {
     public string Value { get; init; }
 

@@ -1,3 +1,3 @@
 namespace Domain.RecipeEntity;
 
-public record RecipeImageName(string Value);
+public sealed record RecipeImageName(string Value);

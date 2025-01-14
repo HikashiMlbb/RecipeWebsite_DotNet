@@ -2,7 +2,7 @@ using SharedKernel;
 
 namespace Domain.UserEntity;
 
-public record Username
+public sealed record Username
 {
     public string Value { get; init; }
 

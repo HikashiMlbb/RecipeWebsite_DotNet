@@ -2,4 +2,4 @@ using Domain.UserEntity;
 
 namespace Domain.RecipeEntity;
 
-public record Comment(UserId AuthorId, RecipeId RecipeId, string Content);
+public sealed record Comment(UserId AuthorId, RecipeId RecipeId, string Content);

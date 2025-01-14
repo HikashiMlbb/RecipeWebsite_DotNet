@@ -2,7 +2,7 @@ using Domain.RecipeEntity;
 
 namespace Domain.UserEntity;
 
-public class User
+public sealed class User
 {
     public UserId Id { get; set; } = null!;
     public Username Username { get; set; }
