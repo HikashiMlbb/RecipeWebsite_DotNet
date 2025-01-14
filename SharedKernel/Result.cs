@@ -3,6 +3,7 @@ namespace SharedKernel;
 public class Result
 {
     public Error? Error { get; init; }
+    public bool IsSuccess => Error is null;
 
     private Result()
     {

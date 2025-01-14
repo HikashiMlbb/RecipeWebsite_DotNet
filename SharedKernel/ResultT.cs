@@ -4,6 +4,7 @@ public class Result<T>
 {
     public T? Value { get; init; }
     public Error? Error { get; init; }
+    public bool IsSuccess => Error is null;
 
     private Result(T value)
     {
