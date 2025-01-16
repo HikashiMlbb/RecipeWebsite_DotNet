@@ -1,4 +1,5 @@
 using Application.Common.Services;
+using Application.Users.CommonDto;
 using Application.Users.Repositories;
 using Domain.UserEntity;
 using SharedKernel;
@@ -18,7 +19,7 @@ public class UserLoginUseCase
         _jwtService = jwtService;
     }
     
-    public async Task<Result<string>> Execute(UserLoginDto dto)
+    public async Task<Result<string>> Login(UserDto dto)
     {
         var usernameResult = Username.Create(dto.Username);
 
