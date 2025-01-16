@@ -1,3 +1,3 @@
-namespace Application.Users.CommonDto;
+namespace Application.Users;
 
 public record UserDto(string Username, string Password);

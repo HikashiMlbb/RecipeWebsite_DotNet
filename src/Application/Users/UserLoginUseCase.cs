@@ -1,10 +1,8 @@
 using Application.Common.Services;
-using Application.Users.CommonDto;
-using Application.Users.Repositories;
 using Domain.UserEntity;
 using SharedKernel;
 
-namespace Application.Users.Login;
+namespace Application.Users;
 
 public class UserLoginUseCase
 {
