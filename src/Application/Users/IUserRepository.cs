@@ -7,4 +7,5 @@ public interface IUserRepository
 {
     public Task<User?> SearchByName(Username usernameResultValue);
     public Task<Result<UserId>> Insert(User newUser);
+    public Task<User?> SearchById(UserId userId);
 }
