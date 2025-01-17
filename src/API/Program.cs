@@ -1,4 +1,5 @@
 using API.Endpoints;
+using dotenv.net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    DotEnv.Load(new DotEnvOptions(envFilePaths: ["../../.env"]));
     app.UseSwagger();
     app.UseSwaggerUI();
 }
