@@ -17,7 +17,7 @@ public class UserLoginUseCase
         _jwtService = jwtService;
     }
     
-    public async Task<Result<string>> Login(UserDto dto)
+    public async Task<Result<string>> LoginAsync(UserDto dto)
     {
         var usernameResult = Username.Create(dto.Username);
 
@@ -26,14 +26,14 @@ public class UserLoginUseCase
             return new Error();
         }
         
-        var foundUser = await _userRepository.SearchByName(usernameResult.Value!);
+        var foundUser = await _userRepository.SearchByUsernameAsync(usernameResult.Value!);
 
         if (foundUser is null)
         {
             return new Error();
         }
 
-        var areEqual = await _passwordService.VerifyAsync(new Password(dto.Password), foundUser.Password);
+        var areEqual = await _passwordService.VerifyAsync(dto.Password, foundUser.Password);
 
         if (!areEqual)
         {

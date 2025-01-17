@@ -17,7 +17,7 @@ public class UserRegisterUseCase
         _jwtService = jwtService;
     }
     
-    public async Task<Result<string>> Register(UserDto dto)
+    public async Task<Result<string>> RegisterAsync(UserDto dto)
     {
         var usernameCreateResult = Username.Create(dto.Username);
 
@@ -26,7 +26,7 @@ public class UserRegisterUseCase
             return new Error();
         }
 
-        var foundUser = await _userRepository.SearchByName(username);
+        var foundUser = await _userRepository.SearchByUsernameAsync(username);
 
         if (foundUser is not null)
         {
@@ -35,7 +35,7 @@ public class UserRegisterUseCase
 
         var password = await _passwordService.CreateAsync(dto.Password);
         var newUser = new User(username, password);
-        var result = await _userRepository.Insert(newUser);
+        var result = await _userRepository.InsertAsync(newUser);
 
         if (!result.IsSuccess)
         {
