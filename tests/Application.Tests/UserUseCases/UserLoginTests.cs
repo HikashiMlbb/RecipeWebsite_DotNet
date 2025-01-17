@@ -48,7 +48,7 @@ public class UserLoginTests
         // Assert
         Assert.False(result.IsSuccess);
         _userRepositoryMock.Verify(repo => repo.SearchByName(It.IsAny<Username>()), Times.Once); // Проверяем, что поиск пользователя вызывался один раз
-        _passwordServiceMock.Verify(service => service.Verify(It.IsAny<Password>(), It.IsAny<Password>()), Times.Never); // Проверяем, что проверка пароля не вызывалась
+        _passwordServiceMock.Verify(service => service.VerifyAsync(It.IsAny<Password>(), It.IsAny<Password>()), Times.Never); // Проверяем, что проверка пароля не вызывалась
     }
 
     [Fact]
@@ -60,7 +60,7 @@ public class UserLoginTests
         var dto = new UserDto(validUsername.Value, "wrongpassword");
         var user = new User(validUsername, validPassword);
         _userRepositoryMock.Setup(repo => repo.SearchByName(It.IsAny<Username>())).ReturnsAsync(user);
-        _passwordServiceMock.Setup(service => service.Verify(It.IsAny<Password>(), It.IsAny<Password>())).Returns(false);
+        _passwordServiceMock.Setup(service => service.VerifyAsync(It.IsAny<Password>(), It.IsAny<Password>())).ReturnsAsync(false);
 
         // Act
         var result = await _useCase.Login(dto);
@@ -68,8 +68,8 @@ public class UserLoginTests
         // Assert
         Assert.False(result.IsSuccess);
         _userRepositoryMock.Verify(repo => repo.SearchByName(It.IsAny<Username>()), Times.Once);
-        _passwordServiceMock.Verify(service => service.Verify(It.IsAny<Password>(), It.IsAny<Password>()), Times.Once);
-        _jwtServiceMock.Verify(service => service.SignToken(It.IsAny<UserId>()), Times.Never);
+        _passwordServiceMock.Verify(service => service.VerifyAsync(It.IsAny<Password>(), It.IsAny<Password>()), Times.Once);
+        _jwtServiceMock.Verify(service => service.SignTokenAsync(It.IsAny<UserId>()), Times.Never);
     }
     
     [Fact]
@@ -82,8 +82,8 @@ public class UserLoginTests
         var dto = new UserDto(validUsername.Value, "wrongpassword");
         var user = new User(validUsername, validPassword);
         _userRepositoryMock.Setup(repo => repo.SearchByName(It.IsAny<Username>())).ReturnsAsync(user);
-        _passwordServiceMock.Setup(service => service.Verify(It.IsAny<Password>(), It.IsAny<Password>())).Returns(true);
-        _jwtServiceMock.Setup(jwt => jwt.SignToken(It.IsAny<UserId>())).Returns(expectedJwtToken);
+        _passwordServiceMock.Setup(service => service.VerifyAsync(It.IsAny<Password>(), It.IsAny<Password>())).ReturnsAsync(true);
+        _jwtServiceMock.Setup(jwt => jwt.SignTokenAsync(It.IsAny<UserId>())).ReturnsAsync(expectedJwtToken);
 
         // Act
         var result = await _useCase.Login(dto);
@@ -92,7 +92,7 @@ public class UserLoginTests
         Assert.True(result.IsSuccess);
         Assert.Equal(expectedJwtToken, result.Value);
         _userRepositoryMock.Verify(repo => repo.SearchByName(It.IsAny<Username>()), Times.Once);
-        _passwordServiceMock.Verify(service => service.Verify(It.IsAny<Password>(), It.IsAny<Password>()), Times.Once);
-        _jwtServiceMock.Verify(service => service.SignToken(It.IsAny<UserId>()), Times.Once);
+        _passwordServiceMock.Verify(service => service.VerifyAsync(It.IsAny<Password>(), It.IsAny<Password>()), Times.Once);
+        _jwtServiceMock.Verify(service => service.SignTokenAsync(It.IsAny<UserId>()), Times.Once);
     }
 }
