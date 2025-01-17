@@ -10,6 +10,8 @@ public static class RecipeEndpoints
         route.MapPost("/{id:int}/rate", () => "Rate the Recipe by ID.");
         route.MapPost("/{id:int}/comment", () => "Comment the Recipe by ID.");
         route.MapGet("/{id:int}", () => "Search Recipe by ID.");
+        route.MapGet("/page", () => "Get Recipes by Pagination.");
+        route.MapGet("/search", () => "Get Recipes by Query.");
         route.MapPut("/{id:int}", () => "Change Recipe.");
         route.MapDelete("/{id:int}", () => "Delete Recipe by ID.");
     }
