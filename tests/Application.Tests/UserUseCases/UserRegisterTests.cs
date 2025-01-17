@@ -3,6 +3,7 @@ using Application.Users;
 using Domain.UserEntity;
 using Moq;
 using SharedKernel;
+// ReSharper disable InconsistentNaming
 
 namespace Application.Tests.UserUseCases;
 
@@ -56,10 +57,10 @@ public class UserRegisterTests
     public async Task Success_ReturnsToken()
     {
         // Arrange
-        var expectedPassword = "somevalidpassword";
-        var expectedToken = "SomeJWTToken";
+        const string expectedPassword = "somevalidpassword";
+        const string expectedToken = "SomeJWTToken";
         var dto = new UserDto("somevalidusername", expectedPassword);
-        _userRepositoryMock.Setup(repo => repo.SearchByName(It.IsAny<Username>())).ReturnsAsync((User)null);
+        _userRepositoryMock.Setup(repo => repo.SearchByName(It.IsAny<Username>())).ReturnsAsync((User)null!);
         _passwordServiceMock.Setup(service => service.Create(expectedPassword)).Returns(new Password(expectedPassword));
         _userRepositoryMock.Setup(repo => repo.Insert(It.IsAny<User>())).ReturnsAsync(Result<UserId>.Success(new UserId(123)));
         _jwtServiceMock.Setup(service => service.SignToken(It.IsAny<UserId>())).Returns(expectedToken);
