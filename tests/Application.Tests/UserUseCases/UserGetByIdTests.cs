@@ -21,14 +21,14 @@ public class UserGetByIdTests
     {
         // Arrange
         const int id = 15;
-        _userRepoMock.Setup(x => x.SearchById(new UserId(id))).ReturnsAsync((User)null!);
+        _userRepoMock.Setup(x => x.SearchByIdAsync(new UserId(id))).ReturnsAsync((User)null!);
         
         // Act
-        var result = await _useCase.GetUser(id);
+        var result = await _useCase.GetUserAsync(id);
 
         // Assert
         Assert.Null(result);
-        _userRepoMock.Verify(x => x.SearchById(It.IsAny<UserId>()), Times.Once);
+        _userRepoMock.Verify(x => x.SearchByIdAsync(It.IsAny<UserId>()), Times.Once);
     }
     
     [Fact]
@@ -37,14 +37,14 @@ public class UserGetByIdTests
         // Arrange
         const int id = 15;
         var user = new User(Username.Create("SomeValidUsername").Value!, new Password("Password")) { Id = new UserId(id) };
-        _userRepoMock.Setup(x => x.SearchById(new UserId(id))).ReturnsAsync(user);
+        _userRepoMock.Setup(x => x.SearchByIdAsync(new UserId(id))).ReturnsAsync(user);
         
         // Act
-        var result = await _useCase.GetUser(id);
+        var result = await _useCase.GetUserAsync(id);
 
         // Assert
         Assert.NotNull(result);
         Assert.Equal(id, result.Id.Value);
-        _userRepoMock.Verify(x => x.SearchById(It.IsAny<UserId>()), Times.Once);
+        _userRepoMock.Verify(x => x.SearchByIdAsync(It.IsAny<UserId>()), Times.Once);
     }
 }
