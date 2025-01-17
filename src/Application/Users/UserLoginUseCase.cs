@@ -33,14 +33,14 @@ public class UserLoginUseCase
             return new Error();
         }
 
-        var areEqual = _passwordService.Verify(new Password(dto.Password), foundUser.Password);
+        var areEqual = await _passwordService.VerifyAsync(new Password(dto.Password), foundUser.Password);
 
         if (!areEqual)
         {
             return new Error();
         }
 
-        return _jwtService.SignToken(foundUser.Id);
+        return await _jwtService.SignTokenAsync(foundUser.Id);
     }
     
 }

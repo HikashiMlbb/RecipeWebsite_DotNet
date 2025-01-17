@@ -4,5 +4,5 @@ namespace Application.Common.Services;
 
 public interface IJwtService
 {
-    string SignToken(UserId foundUserId);
+    public Task<string> SignTokenAsync(UserId foundUserId);
 }

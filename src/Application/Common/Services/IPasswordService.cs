@@ -4,6 +4,6 @@ namespace Application.Common.Services;
 
 public interface IPasswordService
 {
-    bool Verify(Password password, Password foundUserPassword);
-    Password Create(string dtoPassword);
+    public Task<bool> VerifyAsync(Password password, Password foundUserPassword);
+    public Task<Password> CreateAsync(string dtoPassword);
 }

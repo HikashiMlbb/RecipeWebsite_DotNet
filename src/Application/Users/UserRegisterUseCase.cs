@@ -33,7 +33,7 @@ public class UserRegisterUseCase
             return new Error();
         }
 
-        var password = _passwordService.Create(dto.Password);
+        var password = await _passwordService.CreateAsync(dto.Password);
         var newUser = new User(username, password);
         var result = await _userRepository.Insert(newUser);
 
@@ -42,6 +42,6 @@ public class UserRegisterUseCase
             return result.Error!;
         }
 
-        return _jwtService.SignToken(result.Value!);
+        return await _jwtService.SignTokenAsync(result.Value!);
     }
 }

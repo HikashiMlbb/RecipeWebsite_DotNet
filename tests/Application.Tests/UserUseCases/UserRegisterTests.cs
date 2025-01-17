@@ -50,7 +50,7 @@ public class UserRegisterTests
         // Assert
         Assert.False(result.IsSuccess);
         _userRepositoryMock.Verify(repo => repo.SearchByName(It.IsAny<Username>()), Times.Once);
-        _passwordServiceMock.Verify(service => service.Verify(It.IsAny<Password>(), It.IsAny<Password>()), Times.Never);
+        _passwordServiceMock.Verify(service => service.VerifyAsync(It.IsAny<Password>(), It.IsAny<Password>()), Times.Never);
     }
 
     [Fact]
@@ -61,9 +61,9 @@ public class UserRegisterTests
         const string expectedToken = "SomeJWTToken";
         var dto = new UserDto("somevalidusername", expectedPassword);
         _userRepositoryMock.Setup(repo => repo.SearchByName(It.IsAny<Username>())).ReturnsAsync((User)null!);
-        _passwordServiceMock.Setup(service => service.Create(expectedPassword)).Returns(new Password(expectedPassword));
+        _passwordServiceMock.Setup(service => service.CreateAsync(expectedPassword)).ReturnsAsync(new Password(expectedPassword));
         _userRepositoryMock.Setup(repo => repo.Insert(It.IsAny<User>())).ReturnsAsync(Result<UserId>.Success(new UserId(123)));
-        _jwtServiceMock.Setup(service => service.SignToken(It.IsAny<UserId>())).Returns(expectedToken);
+        _jwtServiceMock.Setup(service => service.SignTokenAsync(It.IsAny<UserId>())).ReturnsAsync(expectedToken);
         
         // Act
         var result = await _useCase.Register(dto);
@@ -72,8 +72,8 @@ public class UserRegisterTests
         Assert.True(result.IsSuccess);
         Assert.Equal(expectedToken, result.Value!);
         _userRepositoryMock.Verify(repo => repo.SearchByName(It.IsAny<Username>()), Times.Once);
-        _passwordServiceMock.Verify(service => service.Create(It.IsAny<string>()), Times.Once);
-        _jwtServiceMock.Verify(service => service.SignToken(It.IsAny<UserId>()), Times.Once);
+        _passwordServiceMock.Verify(service => service.CreateAsync(It.IsAny<string>()), Times.Once);
+        _jwtServiceMock.Verify(service => service.SignTokenAsync(It.IsAny<UserId>()), Times.Once);
 
     }
 }
