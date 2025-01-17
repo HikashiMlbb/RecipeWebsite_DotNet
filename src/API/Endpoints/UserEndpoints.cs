@@ -10,6 +10,5 @@ public static class UserEndpoints
         route.MapPost("/signup", () => "Sign up.");
         route.MapPut("/", () => "Change username and password.");
         route.MapGet("/{id:int}", () => "Get by ID.");
-        route.MapGet("/{id:int}/recipes", () => "Get recipes by User ID.");
     }
 }
