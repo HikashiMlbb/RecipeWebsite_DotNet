@@ -23,25 +23,20 @@ public class UserRegisterUseCase
 
         if (usernameCreateResult.Value is not { } username)
         {
-            return new Error();
+            return usernameCreateResult.Error!;
         }
 
         var foundUser = await _userRepository.SearchByUsernameAsync(username);
 
         if (foundUser is not null)
         {
-            return new Error();
+            return UserErrors.UserAlreadyExists;
         }
 
         var password = await _passwordService.CreateAsync(dto.Password);
         var newUser = new User(username, password);
         var result = await _userRepository.InsertAsync(newUser);
 
-        if (!result.IsSuccess)
-        {
-            return result.Error!;
-        }
-
-        return await _jwtService.SignTokenAsync(result.Value!);
+        return await _jwtService.SignTokenAsync(result);
     }
 }

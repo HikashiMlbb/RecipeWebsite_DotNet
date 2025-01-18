@@ -23,21 +23,21 @@ public class UserLoginUseCase
 
         if (!usernameResult.IsSuccess)
         {
-            return new Error();
+            return usernameResult.Error!;
         }
         
         var foundUser = await _userRepository.SearchByUsernameAsync(usernameResult.Value!);
 
         if (foundUser is null)
         {
-            return new Error();
+            return UserErrors.UserNotFound;
         }
 
         var areEqual = await _passwordService.VerifyAsync(dto.Password, foundUser.Password);
 
         if (!areEqual)
         {
-            return new Error();
+            return UserErrors.PasswordIsIncorrect;
         }
 
         return await _jwtService.SignTokenAsync(foundUser.Id);

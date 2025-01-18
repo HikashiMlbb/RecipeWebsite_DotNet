@@ -19,17 +19,17 @@ public sealed record Ingredient
     {
         if (name.Length is < 3 or > 50)
         {
-            return new Error();
+            return RecipeDomainErrors.IngredientNameLengthOutOfRange;
         }
 
         if (count is <= 0 or >= 1_000_000)
         {
-            return new Error();
+            return RecipeDomainErrors.IngredientCountOutOfRange;
         }
 
         if (!Enum.IsDefined((IngredientType)unitType))
         {
-            return new Error();
+            return RecipeDomainErrors.IngredientMeasurementUnitIsNotDefined;
         }
 
         return new Ingredient(name, count, unitType);

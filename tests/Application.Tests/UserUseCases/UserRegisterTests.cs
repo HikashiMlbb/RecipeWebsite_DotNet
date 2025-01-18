@@ -62,7 +62,7 @@ public class UserRegisterTests
         var dto = new UserDto("somevalidusername", expectedPassword);
         _userRepositoryMock.Setup(repo => repo.SearchByUsernameAsync(It.IsAny<Username>())).ReturnsAsync((User)null!);
         _passwordServiceMock.Setup(service => service.CreateAsync(expectedPassword)).ReturnsAsync(new Password(expectedPassword));
-        _userRepositoryMock.Setup(repo => repo.InsertAsync(It.IsAny<User>())).ReturnsAsync(Result<UserId>.Success(new UserId(123)));
+        _userRepositoryMock.Setup(repo => repo.InsertAsync(It.IsAny<User>())).ReturnsAsync(new UserId(123));
         _jwtServiceMock.Setup(service => service.SignTokenAsync(It.IsAny<UserId>())).ReturnsAsync(expectedToken);
         
         // Act
