@@ -10,5 +10,6 @@ public static class RecipeDomainErrors
     public static readonly Error IngredientNameLengthOutOfRange = new("IngredientName.Length", "Ingredient name length is out of range.");
     public static readonly Error IngredientCountOutOfRange = new("Ingredient.Count", "Ingredient count is out of range.");
     public static readonly Error IngredientMeasurementUnitIsNotDefined = new("Ingredient.MeasurementUnit", "Ingredient unit of measurement is not defined.");
+    public static readonly Error CommentLengthOutOfRange = new("Comment.Length", "Comment length is out of range.");
 
 }
