@@ -42,4 +42,9 @@ public sealed class Recipe
         Ingredients = ingredients ?? [];
         Comments = comments ?? [];
     }
+
+    public Recipe()
+    {
+        
+    }
 }
