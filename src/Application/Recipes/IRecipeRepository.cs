@@ -11,4 +11,5 @@ public interface IRecipeRepository
     public Task CommentAsync(RecipeId recipeId, UserId userId, Comment contentResultValue);
     public Task<IEnumerable<Recipe>> SearchByPageAsync(int dtoPage, int dtoPageSize, int dtoSortType);
     public Task<IEnumerable<Recipe>> SearchByQueryAsync(string query);
+    public Task UpdateAsync(RecipeUpdateConfig updateConfig);
 }
