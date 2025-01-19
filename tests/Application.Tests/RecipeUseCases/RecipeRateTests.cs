@@ -1,7 +1,9 @@
 using Application.Recipes;
+using Application.Recipes.Rate;
 using Domain.RecipeEntity;
 using Domain.UserEntity;
 using Moq;
+
 // ReSharper disable InconsistentNaming
 
 namespace Application.Tests.RecipeUseCases;
@@ -9,12 +11,12 @@ namespace Application.Tests.RecipeUseCases;
 public class RecipeRateTests
 {
     private readonly Mock<IRecipeRepository> _repoMock;
-    private readonly RecipeRateUseCase _useCase;
+    private readonly RecipeRate _useCase;
 
     public RecipeRateTests()
     {
         _repoMock = new Mock<IRecipeRepository>();
-        _useCase = new RecipeRateUseCase(_repoMock.Object);
+        _useCase = new RecipeRate(_repoMock.Object);
     }
 
     [Fact]
@@ -26,14 +28,14 @@ public class RecipeRateTests
 
         // Act
         var result = await _useCase.Rate(dto);
-        
+
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(RecipeErrors.RecipeNotFound, result.Error);
         _repoMock.Verify(x => x.SearchByIdAsync(It.IsAny<RecipeId>()), Times.Once);
         _repoMock.Verify(x => x.RateAsync(It.IsAny<RecipeId>(), It.IsAny<UserId>(), It.IsAny<Stars>()), Times.Never);
     }
-    
+
     [Fact]
     public async Task StarsAreNotDefined_ReturnsError()
     {
@@ -48,7 +50,7 @@ public class RecipeRateTests
         var result1 = await _useCase.Rate(dto1);
         var result2 = await _useCase.Rate(dto2);
         var result3 = await _useCase.Rate(dto3);
-        
+
         // Assert
         Assert.False(result1.IsSuccess);
         Assert.Equal(RecipeErrors.StarsAreNotDefined, result1.Error);
@@ -59,7 +61,7 @@ public class RecipeRateTests
         _repoMock.Verify(x => x.SearchByIdAsync(It.IsAny<RecipeId>()), Times.Exactly(3));
         _repoMock.Verify(x => x.RateAsync(It.IsAny<RecipeId>(), It.IsAny<UserId>(), It.IsAny<Stars>()), Times.Never);
     }
-    
+
     [Fact]
     public async Task RateSuccessfully_ReturnsSuccess()
     {
@@ -70,7 +72,7 @@ public class RecipeRateTests
 
         // Act
         var result = await _useCase.Rate(dto);
-        
+
         // Assert
         Assert.True(result.IsSuccess);
         _repoMock.Verify(x => x.SearchByIdAsync(It.IsAny<RecipeId>()), Times.Once);

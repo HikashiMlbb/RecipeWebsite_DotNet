@@ -4,11 +4,6 @@ namespace Domain.UserEntity;
 
 public sealed class User
 {
-    public UserId Id { get; set; } = null!;
-    public Username Username { get; set; }
-    public Password Password { get; set; }
-    public UserRole Role { get; set; }
-
     public ICollection<Recipe> Recipes = [];
 
     public User(
@@ -21,4 +16,9 @@ public sealed class User
         Password = password;
         Role = role;
     }
+
+    public UserId Id { get; set; } = null!;
+    public Username Username { get; set; }
+    public Password Password { get; set; }
+    public UserRole Role { get; set; }
 }

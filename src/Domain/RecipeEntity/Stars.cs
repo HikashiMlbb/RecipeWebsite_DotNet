@@ -2,5 +2,10 @@ namespace Domain.RecipeEntity;
 
 public enum Stars
 {
-    Zero, One, Two, Three, Four, Five
+    Zero,
+    One,
+    Two,
+    Three,
+    Four,
+    Five
 }

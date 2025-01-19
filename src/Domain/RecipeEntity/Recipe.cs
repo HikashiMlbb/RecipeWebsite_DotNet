@@ -4,20 +4,6 @@ namespace Domain.RecipeEntity;
 
 public sealed class Recipe
 {
-    public RecipeId Id { get; set; } = null!;
-    public UserId AuthorId { get; set; }
-    public RecipeTitle Title { get; set; }
-    public RecipeDescription Description { get; set; }
-    public RecipeInstruction Instruction { get; set; }
-    public RecipeImageName ImageName { get; set; }
-    public RecipeDifficulty Difficulty { get; set; }
-    public DateTime PublishedAt { get; set; }
-    public TimeSpan CookingTime { get; set; }
-    
-    public Rate Rate { get; set; }
-    public ICollection<Ingredient> Ingredients { get; set; }
-    public ICollection<Comment> Comments { get; set; }
-
     public Recipe(
         UserId authorId,
         RecipeTitle title,
@@ -45,6 +31,19 @@ public sealed class Recipe
 
     public Recipe()
     {
-        
     }
+
+    public RecipeId Id { get; set; } = null!;
+    public UserId AuthorId { get; set; }
+    public RecipeTitle Title { get; set; }
+    public RecipeDescription Description { get; set; }
+    public RecipeInstruction Instruction { get; set; }
+    public RecipeImageName ImageName { get; set; }
+    public RecipeDifficulty Difficulty { get; set; }
+    public DateTime PublishedAt { get; set; }
+    public TimeSpan CookingTime { get; set; }
+
+    public Rate Rate { get; set; }
+    public ICollection<Ingredient> Ingredients { get; set; }
+    public ICollection<Comment> Comments { get; set; }
 }

@@ -2,5 +2,8 @@ namespace Domain.RecipeEntity;
 
 public enum IngredientType
 {
-    Grams, Milliliters, Pieces, Cups
+    Grams,
+    Milliliters,
+    Pieces,
+    Cups
 }
