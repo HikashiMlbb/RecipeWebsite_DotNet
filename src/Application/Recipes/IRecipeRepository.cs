@@ -12,4 +12,5 @@ public interface IRecipeRepository
     public Task<IEnumerable<Recipe>> SearchByPageAsync(int dtoPage, int dtoPageSize, int dtoSortType);
     public Task<IEnumerable<Recipe>> SearchByQueryAsync(string query);
     public Task UpdateAsync(RecipeUpdateConfig updateConfig);
+    public Task DeleteAsync(RecipeId typedRecipeId);
 }
