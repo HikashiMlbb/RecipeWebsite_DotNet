@@ -20,7 +20,7 @@ public class RecipeRate
         if (recipe is null) return RecipeErrors.RecipeNotFound;
 
         var areStarsDefined = Enum.IsDefined((Stars)dto.Stars);
-        if (!areStarsDefined || dto.Stars == 0) return RecipeErrors.StarsAreNotDefined;
+        if (!areStarsDefined || dto.Stars == (int)Stars.Zero) return RecipeErrors.StarsAreNotDefined;
 
         var rate = (Stars)dto.Stars;
         var userId = new UserId(dto.UserId);
