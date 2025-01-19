@@ -1,6 +1,6 @@
 using Domain.UserEntity;
 
-namespace Application.Common.Services;
+namespace Application.Users.Services;
 
 public interface IJwtService
 {
