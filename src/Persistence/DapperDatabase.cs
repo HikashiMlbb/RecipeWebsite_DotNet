@@ -7,6 +7,7 @@ public class DapperDatabase
     public static void Initialize(DapperConnectionFactory factory)
     {
         using var db = factory.Create();
+        db.Open();
 
         db.Execute(CreateUsersTable);
         db.Execute(CreateRecipesTable);
