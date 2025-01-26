@@ -6,6 +6,13 @@ public sealed class User
 {
     public ICollection<Recipe> Recipes = [];
 
+#pragma warning disable CS8618, CS9264
+    public User()
+#pragma warning restore CS8618, CS9264
+    {
+        
+    }
+
     public User(
         Username username,
         Password password,

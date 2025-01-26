@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Dapper;
 using Domain.UserEntity;
 using Infrastructure.Services;
@@ -58,6 +59,46 @@ public class UserRepositoryTests : IAsyncLifetime
         Assert.True(custom == 1);
         Assert.True(resultSuccess.Value != 0);
         Assert.True(resultFailure.Value == 0);
+    }
+
+    [Fact]
+    public async Task SearchByUsername_NotFound_ReturnsNull()
+    {
+        // Arrange
+        var username = Username.Create("Vovan").Value!;
+        _repository = new UserRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+
+        // Act
+        var result = await _repository.SearchByUsernameAsync(username);
+
+        // Assert
+        Assert.Null(result);
+    }
+    
+    [Fact]
+    public async Task SearchByUsername_Found_ReturnsUser()
+    {
+        // Arrange
+        var id = new UserId(5);
+        var username = Username.Create("Vovan").Value!;
+        var password = new Password("$omeHa$hedPa$$word");
+        var user = new User { Id = id, Username = username, Password = password }; 
+        _repository = new UserRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+        await db.ExecuteAsync("INSERT INTO Users VALUES (5, @username, @password, 'classic')", new
+        {
+            @username = username.Value,
+            @password = password.PasswordHash
+        });
+
+        // Act
+        var result = await _repository.SearchByUsernameAsync(username);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(id, result.Id);
+        Assert.Equal(password, result.Password);
     }
     
     public async Task InitializeAsync()

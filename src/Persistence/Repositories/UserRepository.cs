@@ -1,14 +1,35 @@
 using Application.Users.UseCases;
 using Dapper;
 using Domain.UserEntity;
+using Persistence.Repositories.Dto;
 
 namespace Persistence.Repositories;
 
 public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
 {
-    public Task<User?> SearchByUsernameAsync(Username usernameResultValue)
+    /// <returns>User with ID and Password</returns>
+    public async Task<User?> SearchByUsernameAsync(Username usernameResultValue)
     {
-        throw new NotImplementedException();
+        await using var db = dbFactory.Create();
+        await db.OpenAsync();
+
+        const string sql = "SELECT Id AS UserId, Password FROM Users WHERE Username = @Username;";
+
+        var result = await db.QueryAsync<UserDatabaseDto>(sql, new
+        {
+            @Username = usernameResultValue.Value
+        });
+
+        if (result.FirstOrDefault() is not { } userDto)
+        {
+            return null;
+        }
+
+        return new User
+        {
+            Id = new UserId(userDto.UserId),
+            Password = new Password(userDto.Password)
+        };
     }
 
     public async Task<UserId> InsertAsync(User newUser)
