@@ -1,6 +1,6 @@
 namespace Domain.RecipeEntity;
 
-public sealed record Rate(decimal Value, Stars TotalVotes)
+public sealed record Rate(decimal Value, int TotalVotes)
 {
-    public static readonly Rate Default = new(0, Stars.Zero);
+    public static readonly Rate Default = new(0, 0);
 }

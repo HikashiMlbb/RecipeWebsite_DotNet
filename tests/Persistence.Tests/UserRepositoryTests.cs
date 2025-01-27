@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Dapper;
+using Domain.RecipeEntity;
 using Domain.UserEntity;
 using Infrastructure.Services;
 using Persistence.Repositories;
@@ -99,6 +100,111 @@ public class UserRepositoryTests : IAsyncLifetime
         Assert.NotNull(result);
         Assert.Equal(id, result.Id);
         Assert.Equal(password, result.Password);
+    }
+
+    [Fact]
+    public async Task SearchByIdAsync_NotFound_ReturnsNull()
+    {
+        // Arrange
+        var userId = new UserId(15);
+        _repository = new UserRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        
+        // Act
+        var result = await _repository.SearchByIdAsync(userId);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task SearchByIdAsync_FoundWithoutRecipes_ReturnsUser()
+    {
+        // Arrange
+        var userId = new UserId(15);
+        var username = Username.Create("Vovan").Value!;
+        var password = new Password("$omeHa$hedPa$$word");
+        _repository = new UserRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("INSERT INTO Users (Id, Username, Password, Role) VALUES (@Id, @Username, @Password, @Role);", new
+        {
+            @Id = userId.Value,
+            @Username = username.Value!,
+            @Password = password.PasswordHash,
+            @Role = UserRole.Classic.ToString()
+        });
+        
+        // Act
+        var result = await _repository.SearchByIdAsync(userId);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(userId, result.Id);
+        Assert.Equal(username, result.Username);
+        Assert.Equal(password, result.Password);
+        Assert.Equal(UserRole.Classic, result.Role);
+    }
+    
+    [Fact]
+    public async Task SearchByIdAsync_FoundWithRecipes_ReturnsUser()
+    {
+        #region Arrange
+        
+        var userId = new UserId(15);
+        var username = Username.Create("Vovan").Value!;
+        var password = new Password("$omeHa$hedPa$$word");
+        var recipeId = new RecipeId(69);
+        var title = RecipeTitle.Create("Some Amazing Title").Value;
+        var imageName = new RecipeImageName("some-image.jpg");
+        var difficulty = RecipeDifficulty.Hard;
+        var cookingTime = TimeSpan.FromHours(4);
+        var rating = new Rate(4.7m, 105);
+        _repository = new UserRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("INSERT INTO Users (Id, Username, Password, Role) VALUES (@Id, @Username, @Password, @Role);", new
+        {
+            @Id = userId.Value,
+            @Username = username.Value!,
+            @Password = password.PasswordHash,
+            @Role = UserRole.Classic.ToString()
+        });
+
+        await db.ExecuteAsync("INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, @Description, @Instruction, @ImageName, @Difficulty, @PublishedAt, @CookingTime, @Rating, @Votes);", new
+        {
+            @Id = recipeId.Value,
+            @AuthorId = userId.Value,
+            @Title = title!.Value,
+            @Description = new string('b', 500),
+            @Instruction = new string('b', 500),
+            @ImageName = imageName.Value,
+            @Difficulty = difficulty.ToString(),
+            @PublishedAt = DateTimeOffset.UtcNow,
+            @CookingTime = cookingTime,
+            @Rating = rating.Value,
+            @Votes = rating.TotalVotes
+        });
+        #endregion
+
+        #region Act
+
+        var result = await _repository.SearchByIdAsync(userId);
+
+        #endregion
+
+        #region Assert
+
+        Assert.NotNull(result);
+        Assert.Equal(userId, result.Id);
+        Assert.Equal(username, result.Username);
+        Assert.Equal(password, result.Password);
+        Assert.Equal(UserRole.Classic, result.Role);
+        Assert.NotEmpty(result.Recipes);
+        Assert.Equal(recipeId, result.Recipes.First().Id);
+
+        #endregion
     }
     
     public async Task InitializeAsync()
