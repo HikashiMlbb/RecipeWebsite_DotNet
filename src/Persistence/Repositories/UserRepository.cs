@@ -133,8 +133,16 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
         };
     }
 
-    public Task UpdatePasswordAsync(Password newHashedPassword)
+    public async Task UpdatePasswordAsync(UserId userId, Password newHashedPassword)
     {
-        throw new NotImplementedException();
+        await using var db = dbFactory.Create();
+        await db.OpenAsync();
+
+        const string sql = "UPDATE Users SET Password = @Password WHERE Id = @Id";
+        await db.ExecuteAsync(sql, new
+        {
+            @Password = newHashedPassword.PasswordHash,
+            @Id = userId.Value
+        });
     }
 }
