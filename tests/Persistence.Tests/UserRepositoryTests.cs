@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Dapper;
 using Domain.RecipeEntity;
 using Domain.UserEntity;

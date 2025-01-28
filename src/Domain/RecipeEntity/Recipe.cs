@@ -40,7 +40,7 @@ public sealed class Recipe
     public RecipeInstruction Instruction { get; set; }
     public RecipeImageName ImageName { get; set; }
     public RecipeDifficulty Difficulty { get; set; }
-    public DateTimeOffset PublishedAt { get; set; }
+    public DateTimeOffset PublishedAt { get; set; } = DateTimeOffset.Now;
     public TimeSpan CookingTime { get; set; }
 
     public Rate Rate { get; set; }
