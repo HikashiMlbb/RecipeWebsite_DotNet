@@ -118,7 +118,7 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
                 Id = new RecipeId(x.RecipeId),
                 Title = RecipeTitle.Create(x.Title).Value!,
                 ImageName = new RecipeImageName(x.ImageName),
-                Difficulty = Enum.Parse<RecipeDifficulty>(x.Difficulty),
+                Difficulty = Enum.Parse<RecipeDifficulty>(x.Difficulty, ignoreCase: true),
                 CookingTime = x.CookingTime,
                 Rate = new Rate(x.Rating, x.Votes)
             }).ToList() as ICollection<Recipe>;
@@ -128,7 +128,7 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
             Id = new UserId(userDto.UserId),
             Username = Username.Create(userDto.Username).Value!,
             Password = new Password(userDto.Password),
-            Role = Enum.Parse<UserRole>(userDto.Role),
+            Role = Enum.Parse<UserRole>(userDto.Role, ignoreCase: true),
             Recipes = recipes
         };
     }

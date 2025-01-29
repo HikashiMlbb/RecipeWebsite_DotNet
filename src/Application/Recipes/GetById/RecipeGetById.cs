@@ -14,6 +14,11 @@ public class RecipeGetById
     public async Task<Recipe?> GetRecipeAsync(int id)
     {
         var recipeId = new RecipeId(id);
-        return await _repo.SearchByIdAsync(recipeId);
+        var foundRecipe = await _repo.SearchByIdAsync(recipeId);
+        if (foundRecipe is null) return null;
+
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        foundRecipe.Comments = foundRecipe.Comments is null ? [] : foundRecipe.Comments.OrderByDescending(x => x.PublishedAt).ToList();
+        return foundRecipe;
     }
 }

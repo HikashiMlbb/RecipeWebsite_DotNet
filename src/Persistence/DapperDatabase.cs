@@ -57,6 +57,7 @@ public class DapperDatabase
 
     private const string CreateIngredientsTable = """
                                                   CREATE TABLE IF NOT EXISTS Ingredients (
+                                                      Id BIGSERIAL PRIMARY KEY,
                                                       Recipe_Id INT NOT NULL REFERENCES Recipes(Id) ON DELETE CASCADE,
                                                       Name TEXT NOT NULL,
                                                       Count REAL NOT NULL,
@@ -66,6 +67,7 @@ public class DapperDatabase
     
     private const string CreateCommentsTable = """
                                                CREATE TABLE IF NOT EXISTS Comments (
+                                                   Id BIGSERIAL PRIMARY KEY,
                                                    Recipe_Id INT NOT NULL REFERENCES Recipes(Id) ON DELETE CASCADE,
                                                    User_Id INT NULL REFERENCES Users(Id) ON DELETE SET NULL,
                                                    Content TEXT NOT NULL,

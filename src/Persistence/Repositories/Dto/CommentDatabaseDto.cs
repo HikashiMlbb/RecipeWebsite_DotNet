@@ -1,8 +1,9 @@
 namespace Persistence.Repositories.Dto;
 
-public class CommentDatabaseDto
+public record CommentDatabaseDto
 {
-    public int RecipeId { get; set; }
-    public int AuthorId { get; set; }
+    public long CommentId { get; set; }
+    public UserDatabaseDto Author { get; set; } = null!;
     public string Content { get; set; } = null!;
+    public DateTimeOffset CommentPublishedAt { get; set; }
 }

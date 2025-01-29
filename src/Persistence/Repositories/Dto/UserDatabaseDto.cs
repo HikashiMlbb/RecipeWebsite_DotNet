@@ -1,6 +1,6 @@
 namespace Persistence.Repositories.Dto;
 
-public class UserDatabaseDto
+public record UserDatabaseDto
 {
     public int UserId { get; set; }
     public string Username { get; set; } = null!;
