@@ -24,7 +24,7 @@ public class RecipeComment
         
         var userId = new UserId(dto.UserId);
         var user = await _userRepo.SearchByIdAsync(userId);
-        var commentResult = Domain.RecipeEntity.Comment.Create(user!, dto.Content);
+        var commentResult = Domain.RecipeEntity.Comment.Create(user!, dto.Content, DateTimeOffset.UtcNow);
         if (!commentResult.IsSuccess) return commentResult.Error!;
 
         await _recipeRepo.CommentAsync(recipeId, commentResult.Value!);

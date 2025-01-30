@@ -3,6 +3,7 @@ using Domain.UserEntity;
 using SharedKernel;
 
 [assembly: InternalsVisibleTo("Application.Tests")]
+[assembly: InternalsVisibleTo("Persistence.Tests")]
 
 namespace Domain.RecipeEntity;
 
@@ -10,12 +11,12 @@ public sealed record Comment
 {
     internal Comment(User user, string content, DateTimeOffset publishedAt)
     {
-        AuthorId = user;
+        Author = user;
         Content = content;
         PublishedAt = publishedAt;
     }
 
-    public User AuthorId { get; set; }
+    public User Author { get; set; }
     public string Content { get; init; }
     public DateTimeOffset PublishedAt { get; init; }
 

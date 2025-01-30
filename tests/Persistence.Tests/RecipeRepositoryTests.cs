@@ -253,9 +253,9 @@ public class RecipeRepositoryTests : IAsyncLifetime
         };
         var comments = new[]
         {
-            Comment.Create(new User { Id = userId, Username = Username.Create("Vovan").Value! }, "Very Interesting!").Value!,
-            Comment.Create(new User { Id = new UserId(70), Username = Username.Create("Petr").Value! }, "I am first!", DateTimeOffset.Now - TimeSpan.FromDays(40)).Value!,
-            Comment.Create(new User { Id = new UserId(71), Username = Username.Create("zxcursed").Value! }, "So delicious! I love it!", DateTimeOffset.UtcNow - TimeSpan.FromDays(14)).Value!
+            new Comment(new User { Id = userId, Username = Username.Create("Vovan").Value! }, "Very Interesting!", DateTimeOffset.UtcNow),
+            new Comment(new User { Id = new UserId(70), Username = Username.Create("Petr").Value! }, "I am first!", DateTimeOffset.Now - TimeSpan.FromDays(40)),
+            new Comment(new User { Id = new UserId(71), Username = Username.Create("zxcursed").Value! }, "So delicious! I love it!", DateTimeOffset.UtcNow - TimeSpan.FromDays(14))
         };
         _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
@@ -474,6 +474,51 @@ public class RecipeRepositoryTests : IAsyncLifetime
         Assert.Equal(Stars.Zero, rate2);
         Assert.Equal(0, rate);
         Assert.Equal(0, votes);
+
+        #endregion
+    }
+
+    [Fact]
+    public async Task Comment_Successfully()
+    {
+        #region Arrange
+
+        var recipeId = new RecipeId(14);
+        var userId = new UserId(69);
+        var user = new User { Id = userId };
+        var comment = new Comment(user, "Very good!", DateTimeOffset.Now.ToUniversalTime());
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (@UserId, 'Pavel', 'SomePassword', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (@RecipeId, @UserId, 'T', 'D', 'I', 'IMG', 'hard', now(), '2h', 0, 0);
+                              """, new
+        {
+            @UserId = userId.Value,
+            @RecipeId = recipeId.Value
+        });
+
+        #endregion
+        
+        #region Act
+
+        await _repo.CommentAsync(recipeId, comment);
+        var (commentRecipeId, commentAuthorId, content, publicationDate) = await db.QueryFirstAsync<(int, int, string, DateTimeOffset)>("SELECT Recipe_Id, User_Id, Content, Published_At FROM Comments;");
+
+        #endregion
+
+        #region Assert
+
+        Assert.Equal(comment.Author.Id.Value, commentAuthorId);
+        Assert.Equal(recipeId.Value, commentRecipeId);
+        Assert.Equal(comment.Content, content);
+        Assert.Equal(comment.PublishedAt, publicationDate);
+        
 
         #endregion
     }

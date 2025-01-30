@@ -177,9 +177,22 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         return (Stars)newRate;
     }
 
-    public Task CommentAsync(RecipeId recipeId, Comment contentResultValue)
+    public async Task CommentAsync(RecipeId recipeId, Comment comment)
     {
-        throw new NotImplementedException();
+        await using var db = factory.Create();
+        await db.OpenAsync();
+
+        const string sql = """
+                           INSERT INTO Comments (Id, Recipe_Id, User_Id, Content, Published_At)
+                           VALUES (DEFAULT, @RecipeId, @UserId, @Content, @PublishedAt);
+                           """;
+        await db.ExecuteAsync(sql, new
+        {
+            @RecipeId = recipeId.Value,
+            @UserId = comment.Author.Id.Value,
+            @Content = comment.Content,
+            @PublishedAt = comment.PublishedAt.ToUniversalTime()
+        });
     }
 
     public Task<IEnumerable<Recipe>> SearchByPageAsync(int dtoPage, int dtoPageSize, int dtoSortType)
