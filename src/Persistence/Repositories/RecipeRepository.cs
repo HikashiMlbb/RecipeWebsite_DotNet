@@ -1,11 +1,9 @@
-using System.Data;
 using Application.Recipes;
 using Application.Recipes.Update;
 using Dapper;
 using Dapper.Transaction;
 using Domain.RecipeEntity;
 using Domain.UserEntity;
-using Npgsql;
 using Persistence.Repositories.Dto;
 
 namespace Persistence.Repositories;
@@ -162,9 +160,21 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         };
     }
 
-    public Task RateAsync(RecipeId recipeId, UserId userId, Stars rate)
+    public async Task<Stars> RateAsync(RecipeId recipeId, UserId userId, Stars rate)
     {
-        throw new NotImplementedException();
+        await using var db = factory.Create();
+        await db.OpenAsync();
+        
+        const string sql = "SELECT Rate_Recipe(@RecipeId, @UserId, @Rate)";
+        
+        var newRate = await db.QueryFirstAsync<int>(sql, new
+        {
+            @RecipeId = recipeId.Value,
+            @UserId = userId.Value,
+            @Rate = (int)rate
+        });
+
+        return (Stars)newRate;
     }
 
     public Task CommentAsync(RecipeId recipeId, Comment contentResultValue)

@@ -16,14 +16,15 @@ public class RecipeRate
     public async Task<Result> Rate(RecipeRateDto dto)
     {
         var recipeId = new RecipeId(dto.RecipeId);
+        var userId = new UserId(dto.UserId);
         var recipe = await _recipeRepo.SearchByIdAsync(recipeId);
         if (recipe is null) return RecipeErrors.RecipeNotFound;
+        if (recipe.AuthorId == userId) return RecipeErrors.UserIsAuthor; 
 
         var areStarsDefined = Enum.IsDefined((Stars)dto.Stars);
         if (!areStarsDefined || dto.Stars == (int)Stars.Zero) return RecipeErrors.StarsAreNotDefined;
 
         var rate = (Stars)dto.Stars;
-        var userId = new UserId(dto.UserId);
 
         await _recipeRepo.RateAsync(recipeId, userId, rate);
 

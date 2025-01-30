@@ -16,6 +16,7 @@ public class DapperDatabase
         db.Execute(CreateCommentsTable);
         db.Execute(CreateRatingTriggerFunction);
         db.Execute(CreateRatingTrigger);
+        db.Execute(CreateRateFunction);
     }
 
     #region Sql Queries Definition
@@ -77,13 +78,23 @@ public class DapperDatabase
     
     private const string CreateRatingTriggerFunction = """
                                                         CREATE OR REPLACE FUNCTION On_Recipe_Rated() RETURNS TRIGGER AS $$
-                                                            BEGIN
+                                                        BEGIN
+                                                            IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
                                                                 UPDATE Recipes SET 
                                                                     Votes = (SELECT COUNT(*) FROM Recipe_Ratings WHERE Recipe_Id = NEW.Recipe_Id),
                                                                     Rating = (SELECT AVG(Rate) FROM Recipe_Ratings WHERE Recipe_Id = NEW.Recipe_Id)
                                                                 WHERE Id = NEW.Recipe_Id;
                                                                 RETURN NEW;
-                                                            END;
+                                                            ELSIF TG_OP = 'DELETE' THEN
+                                                                UPDATE Recipes SET 
+                                                                    Votes = (SELECT COUNT(*) FROM Recipe_Ratings WHERE Recipe_Id = OLD.Recipe_Id),
+                                                                    Rating = (SELECT COALESCE(AVG(Rate), 0) FROM Recipe_Ratings WHERE Recipe_Id = OLD.Recipe_Id)
+                                                                WHERE Id = OLD.Recipe_Id;
+                                                                RETURN OLD;
+                                                            END IF;
+                                                            
+                                                            RETURN NULL;
+                                                        END;
                                                         $$ LANGUAGE plpgsql;
                                                         """;
     
@@ -93,6 +104,25 @@ public class DapperDatabase
                                                    FOR EACH ROW
                                                    EXECUTE PROCEDURE On_Recipe_Rated();
                                                """;
+    
+    private const string CreateRateFunction = """
+                                                CREATE OR REPLACE FUNCTION Rate_Recipe(_recipe_id INT, _user_id INT, _rate INT) RETURNS INT AS $$
+                                                    DECLARE
+                                                        result INT;
+                                                    BEGIN
+                                                        SELECT Rate INTO result FROM Recipe_Ratings WHERE Recipe_Id = _recipe_id AND User_Id = _user_id AND Rate = _rate;
+                                                        IF FOUND THEN
+                                                            DELETE FROM Recipe_Ratings WHERE Recipe_Id = _recipe_id AND User_Id = _user_id;
+                                                            RETURN 0;
+                                                        END IF; 
+                                                            
+                                                        INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                                                        VALUES (_recipe_id, _user_id, _rate)
+                                                        ON CONFLICT (Recipe_Id, User_Id) DO UPDATE SET Rate = EXCLUDED.Rate RETURNING Recipe_Ratings.Rate INTO result;
+                                                        RETURN result;
+                                                    END;
+                                                $$ LANGUAGE plpgsql;
+                                                """;
 
     #endregion
 }

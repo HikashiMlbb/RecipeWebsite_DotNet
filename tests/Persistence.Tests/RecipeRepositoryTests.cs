@@ -331,6 +331,152 @@ public class RecipeRepositoryTests : IAsyncLifetime
         #endregion
     }
 
+    [Fact]
+    public async Task RateAsync_SetRate()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (123, 'Peter', 'Password1234', 'classic');
+                        
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (456, 123, 'RecipeTitle', 'RecipeD', 'RI', 'IMG', 'hard', now(), '2h', 0, 0);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
+        var (rate, votes) = await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
+
+        #endregion
+
+        #region Assert
+
+        Assert.Equal(Stars.Five, result);
+        Assert.Equal(5.0m, rate);
+        Assert.Equal(1, votes);
+
+        #endregion
+    }
+
+    [Fact]
+    public async Task RateAsync_SetRateTwice()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (123, 'Peter', 'Password1234', 'classic'),
+                                     (321, 'Ivan', '1234Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (456, 123, 'RecipeTitle', 'RecipeD', 'RI', 'IMG', 'hard', now(), '2h', 0, 0);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var rate1 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
+        var rate2 = await _repo.RateAsync(new RecipeId(456), new UserId(321), Stars.Three);
+        var (rate, votes) = await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
+
+        #endregion
+
+        #region Assert
+
+        Assert.Equal(Stars.Five, rate1);
+        Assert.Equal(Stars.Three, rate2);
+        Assert.Equal(4.0m, rate);
+        Assert.Equal(2, votes);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task RateAsync_ChangeRate()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (123, 'Peter', 'Password1234', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (456, 123, 'RecipeTitle', 'RecipeD', 'RI', 'IMG', 'hard', now(), '2h', 0, 0);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var rate1 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
+        var rate2 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Three);
+        var (rate, votes) = await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
+
+        #endregion
+
+        #region Assert
+
+        Assert.Equal(Stars.Five, rate1);
+        Assert.Equal(Stars.Three, rate2);
+        Assert.Equal(3.0m, rate);
+        Assert.Equal(1, votes);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task RateAsync_UndoRate()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (123, 'Peter', 'Password1234', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (456, 123, 'RecipeTitle', 'RecipeD', 'RI', 'IMG', 'hard', now(), '2h', 0, 0);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var rate1 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
+        var rate2 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
+        var (rate, votes) = await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
+
+        #endregion
+
+        #region Assert
+
+        Assert.Equal(Stars.Five, rate1);
+        Assert.Equal(Stars.Zero, rate2);
+        Assert.Equal(0, rate);
+        Assert.Equal(0, votes);
+
+        #endregion
+    }
     public async Task InitializeAsync()
     {
         await _container.StartAsync();
