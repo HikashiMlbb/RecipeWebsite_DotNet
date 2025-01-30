@@ -19,6 +19,6 @@ public class RecipeGetByPage
 
         if (!Enum.IsDefined((RecipeSortType)dto.SortType)) dto = dto with { SortType = (int)RecipeSortType.Popular };
 
-        return await _repo.SearchByPageAsync(dto.Page, dto.PageSize, dto.SortType);
+        return await _repo.SearchByPageAsync(dto.Page, dto.PageSize, (RecipeSortType)dto.SortType);
     }
 }

@@ -1,10 +1,13 @@
+using System.Runtime.CompilerServices;
 using SharedKernel;
+
+[assembly: InternalsVisibleTo("Persistence")]
 
 namespace Domain.RecipeEntity;
 
 public sealed record RecipeTitle
 {
-    private RecipeTitle(string value)
+    internal RecipeTitle(string value)
     {
         Value = value;
     }

@@ -1,3 +1,4 @@
+using Application.Recipes.GetByPage;
 using Dapper;
 using Domain.RecipeEntity;
 using Domain.UserEntity;
@@ -522,6 +523,479 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
+
+    [Fact]
+    public async Task SearchByPageAsync_RecipesEmpty()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+
+        #endregion
+
+        #region Act
+
+        var result = await _repo.SearchByPageAsync(1, 10, RecipeSortType.Popular);
+
+        #endregion
+
+        #region Assert
+
+        Assert.Empty(result);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task SearchByPageAsync_FullOnePage_PopularFirst()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (101, 'Username1', 'Password', 'classic'),
+                                     (102, 'Username2', 'Password', 'classic'),
+                                     (103, 'Username3', 'Password', 'classic'),
+                                     (104, 'Username4', 'Password', 'classic'),
+                                     (105, 'Username5', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
+                                     (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
+                                     (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
+                                     (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
+                                     (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
+
+                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              VALUES (503, 101, 1),
+                                     (503, 102, 1),
+                                     (503, 103, 1),
+                                     (503, 104, 1),
+                                     (503, 105, 1),
+                                     (502, 101, 5),
+                                     (502, 103, 5),
+                                     (502, 104, 5),
+                                     (501, 102, 4),
+                                     (501, 103, 4),
+                                     (501, 104, 4);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByPageAsync(1, 5, RecipeSortType.Popular)).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.NotEmpty(result);
+        Assert.Equal(5, result.Count);
+        Assert.Equal(new RecipeId(503), result[0].Id);
+        Assert.Equal(new RecipeId(502), result[1].Id);
+        Assert.Equal(new RecipeId(501), result[2].Id);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task SearchByPageAsync_FullOnePage_NewestFirst()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (101, 'Username1', 'Password', 'classic'),
+                                     (102, 'Username2', 'Password', 'classic'),
+                                     (103, 'Username3', 'Password', 'classic'),
+                                     (104, 'Username4', 'Password', 'classic'),
+                                     (105, 'Username5', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
+                                     (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
+                                     (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
+                                     (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
+                                     (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
+
+                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              VALUES (503, 101, 1),
+                                     (503, 102, 1),
+                                     (503, 103, 1),
+                                     (503, 104, 1),
+                                     (503, 105, 1),
+                                     (502, 101, 5),
+                                     (502, 103, 5),
+                                     (502, 104, 5),
+                                     (501, 102, 4),
+                                     (501, 103, 4),
+                                     (501, 104, 4);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByPageAsync(1, 5, RecipeSortType.Newest)).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.NotEmpty(result);
+        Assert.Equal(5, result.Count);
+        Assert.Equal(new RecipeId(505), result[0].Id);
+        Assert.Equal(new RecipeId(504), result[1].Id);
+        Assert.Equal(new RecipeId(501), result[2].Id);
+        Assert.Equal(new RecipeId(502), result[3].Id);
+        Assert.Equal(new RecipeId(503), result[4].Id);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task SearchByPageAsync_SlicedFirstPage_PopularFirst()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (101, 'Username1', 'Password', 'classic'),
+                                     (102, 'Username2', 'Password', 'classic'),
+                                     (103, 'Username3', 'Password', 'classic'),
+                                     (104, 'Username4', 'Password', 'classic'),
+                                     (105, 'Username5', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
+                                     (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
+                                     (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
+                                     (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
+                                     (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
+
+                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              VALUES (503, 101, 1),
+                                     (503, 102, 1),
+                                     (503, 103, 1),
+                                     (503, 104, 1),
+                                     (503, 105, 1),
+                                     (502, 101, 5),
+                                     (502, 103, 5),
+                                     (502, 104, 5),
+                                     (501, 102, 4),
+                                     (501, 103, 4),
+                                     (501, 104, 4);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByPageAsync(1, 2, RecipeSortType.Popular)).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.NotEmpty(result);
+        Assert.Equal(2, result.Count);
+        Assert.Equal(new RecipeId(503), result[0].Id);
+        Assert.Equal(new RecipeId(502), result[1].Id);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task SearchByPageAsync_SlicedFirstPage_NewestFirst()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (101, 'Username1', 'Password', 'classic'),
+                                     (102, 'Username2', 'Password', 'classic'),
+                                     (103, 'Username3', 'Password', 'classic'),
+                                     (104, 'Username4', 'Password', 'classic'),
+                                     (105, 'Username5', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
+                                     (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
+                                     (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
+                                     (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
+                                     (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
+
+                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              VALUES (503, 101, 1),
+                                     (503, 102, 1),
+                                     (503, 103, 1),
+                                     (503, 104, 1),
+                                     (503, 105, 1),
+                                     (502, 101, 5),
+                                     (502, 103, 5),
+                                     (502, 104, 5),
+                                     (501, 102, 4),
+                                     (501, 103, 4),
+                                     (501, 104, 4);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByPageAsync(1, 2, RecipeSortType.Newest)).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.NotEmpty(result);
+        Assert.Equal(2, result.Count);
+        Assert.Equal(new RecipeId(505), result[0].Id);
+        Assert.Equal(new RecipeId(504), result[1].Id);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task SearchByPageAsync_SlicedSecondPage_PopularFirst()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (101, 'Username1', 'Password', 'classic'),
+                                     (102, 'Username2', 'Password', 'classic'),
+                                     (103, 'Username3', 'Password', 'classic'),
+                                     (104, 'Username4', 'Password', 'classic'),
+                                     (105, 'Username5', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
+                                     (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
+                                     (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
+                                     (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
+                                     (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
+
+                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              VALUES (503, 101, 1),
+                                     (503, 102, 1),
+                                     (503, 103, 1),
+                                     (503, 104, 1),
+                                     (503, 105, 1),
+                                     (502, 101, 5),
+                                     (502, 103, 5),
+                                     (502, 104, 5),
+                                     (501, 102, 4),
+                                     (501, 103, 4),
+                                     (501, 104, 4);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByPageAsync(2, 2, RecipeSortType.Popular)).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.NotEmpty(result);
+        Assert.Equal(2, result.Count);
+        Assert.Equal(new RecipeId(501), result[0].Id);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task SearchByPageAsync_SlicedSecondPage_NewestFirst()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (101, 'Username1', 'Password', 'classic'),
+                                     (102, 'Username2', 'Password', 'classic'),
+                                     (103, 'Username3', 'Password', 'classic'),
+                                     (104, 'Username4', 'Password', 'classic'),
+                                     (105, 'Username5', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
+                                     (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
+                                     (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
+                                     (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
+                                     (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
+
+                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              VALUES (503, 101, 1),
+                                     (503, 102, 1),
+                                     (503, 103, 1),
+                                     (503, 104, 1),
+                                     (503, 105, 1),
+                                     (502, 101, 5),
+                                     (502, 103, 5),
+                                     (502, 104, 5),
+                                     (501, 102, 4),
+                                     (501, 103, 4),
+                                     (501, 104, 4);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByPageAsync(2, 2, RecipeSortType.Newest)).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.NotEmpty(result);
+        Assert.Equal(2, result.Count);
+        Assert.Equal(new RecipeId(501), result[0].Id);
+        Assert.Equal(new RecipeId(502), result[1].Id);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task SearchByPageAsync_SlicedThirdPage_PopularFirst()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (101, 'Username1', 'Password', 'classic'),
+                                     (102, 'Username2', 'Password', 'classic'),
+                                     (103, 'Username3', 'Password', 'classic'),
+                                     (104, 'Username4', 'Password', 'classic'),
+                                     (105, 'Username5', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
+                                     (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
+                                     (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
+                                     (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
+                                     (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
+
+                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              VALUES (503, 101, 1),
+                                     (503, 102, 1),
+                                     (503, 103, 1),
+                                     (503, 104, 1),
+                                     (503, 105, 1),
+                                     (502, 101, 5),
+                                     (502, 103, 5),
+                                     (502, 104, 5),
+                                     (501, 102, 4),
+                                     (501, 103, 4),
+                                     (501, 104, 4),
+                                     (505, 104, 4);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByPageAsync(3, 2, RecipeSortType.Popular)).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.NotEmpty(result);
+        Assert.Single(result);
+        Assert.Equal(new RecipeId(504), result[0].Id);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task SearchByPageAsync_SlicedThirdPage_NewestFirst()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (101, 'Username1', 'Password', 'classic'),
+                                     (102, 'Username2', 'Password', 'classic'),
+                                     (103, 'Username3', 'Password', 'classic'),
+                                     (104, 'Username4', 'Password', 'classic'),
+                                     (105, 'Username5', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
+                                     (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
+                                     (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
+                                     (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
+                                     (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
+
+                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              VALUES (503, 101, 1),
+                                     (503, 102, 1),
+                                     (503, 103, 1),
+                                     (503, 104, 1),
+                                     (503, 105, 1),
+                                     (502, 101, 5),
+                                     (502, 103, 5),
+                                     (502, 104, 5),
+                                     (501, 102, 4),
+                                     (501, 103, 4),
+                                     (501, 104, 4);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByPageAsync(3, 2, RecipeSortType.Newest)).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.NotEmpty(result);
+        Assert.Single(result);
+        Assert.Equal(new RecipeId(503), result[0].Id);
+
+        #endregion
+    }
+    
     public async Task InitializeAsync()
     {
         await _container.StartAsync();

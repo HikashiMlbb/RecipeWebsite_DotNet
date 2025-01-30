@@ -1,4 +1,5 @@
 using Application.Recipes;
+using Application.Recipes.GetByPage;
 using Application.Recipes.Update;
 using Dapper;
 using Dapper.Transaction;
@@ -195,9 +196,62 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         });
     }
 
-    public Task<IEnumerable<Recipe>> SearchByPageAsync(int dtoPage, int dtoPageSize, int dtoSortType)
+    public async Task<IEnumerable<Recipe>> SearchByPageAsync(int page, int pageSize, RecipeSortType sortType)
     {
-        throw new NotImplementedException();
+        await using var db = factory.Create();
+        await db.OpenAsync();
+
+        const string sqlBeginning = """
+                           SELECT
+                                Id AS RecipeId,
+                                Title,
+                                Image_Name AS ImageName,
+                                Difficulty,
+                                Cooking_Time AS CookingTime,
+                                Rating,
+                                Votes
+                           FROM Recipes
+                           
+                           """;
+        
+        const string sqlEnding = """
+                                 
+                                 LIMIT @Limit
+                                 OFFSET @Offset;
+                                 """;
+        
+        const string popular = """
+                               ORDER BY
+                                    Votes DESC,
+                                    Rating DESC
+                               """;
+        
+        const string newest = "ORDER BY Published_At DESC";
+
+        var chosenSort = sortType switch
+        {
+            RecipeSortType.Popular => popular,
+            RecipeSortType.Newest => newest,
+            _ => throw new ArgumentOutOfRangeException(nameof(sortType), sortType, null)
+        };
+
+        var sql = sqlBeginning + chosenSort + sqlEnding;
+
+        var foundRawRecipes = await db.QueryAsync<RecipeDatabaseDto>(sql, new
+        {
+            @Limit = pageSize,
+            @Offset = (page - 1) * pageSize
+        });
+
+        return foundRawRecipes.Select(x => new Recipe
+        {
+            Id = new RecipeId(x.RecipeId),
+            Title = new RecipeTitle(x.Title),
+            ImageName = new RecipeImageName(x.ImageName),
+            Difficulty = Enum.Parse<RecipeDifficulty>(x.Difficulty, ignoreCase: true),
+            CookingTime = x.CookingTime,
+            Rate = new Rate(x.Rating, x.Votes)
+        }).ToList();
     }
 
     public Task<IEnumerable<Recipe>> SearchByQueryAsync(string query)
