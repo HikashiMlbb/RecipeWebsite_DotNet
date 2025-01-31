@@ -53,9 +53,9 @@ public class RecipeUpdate
 
         if (dto.Difficulty is { } rawDifficulty)
         {
-            if (!Enum.IsDefined((RecipeDifficulty)rawDifficulty)) return RecipeErrors.DifficultyIsNotDefined;
+            if (!Enum.TryParse<RecipeDifficulty>(rawDifficulty, true, out var difficulty)) return RecipeErrors.DifficultyIsNotDefined;
 
-            updateConfig = updateConfig with { Difficulty = (RecipeDifficulty)rawDifficulty };
+            updateConfig = updateConfig with { Difficulty = difficulty };
         }
 
         if (dto.CookingTime is { } rawCookingTime)

@@ -17,8 +17,8 @@ public class RecipeGetByPage
 
         if (dto.PageSize <= 0) dto = dto with { PageSize = 10 };
 
-        if (!Enum.IsDefined((RecipeSortType)dto.SortType)) dto = dto with { SortType = (int)RecipeSortType.Popular };
+        if (!Enum.TryParse<RecipeSortType>(dto.SortType, true, out _)) dto = dto with { SortType = RecipeSortType.Popular.ToString() };
 
-        return await _repo.SearchByPageAsync(dto.Page, dto.PageSize, dto.SortType);
+        return await _repo.SearchByPageAsync(dto.Page, dto.PageSize, Enum.Parse<RecipeSortType>(dto.SortType, ignoreCase: true));
     }
 }

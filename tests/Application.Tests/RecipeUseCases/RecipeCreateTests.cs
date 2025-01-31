@@ -26,7 +26,7 @@ public class RecipeCreateTests
     public async Task UserNotFound_ReturnsError()
     {
         // Arrange
-        var dto = new RecipeCreateDto(1, "", "", "", "", 0, "", []);
+        var dto = new RecipeCreateDto(1, "", "", "", "", "hard", "", []);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync((User)null!);
 
         // Act
@@ -44,7 +44,7 @@ public class RecipeCreateTests
     {
         // Arrange
         var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
-        var dto = new RecipeCreateDto(1, "", "", "", "", 0, "", []);
+        var dto = new RecipeCreateDto(1, "", "", "", "", "hard", "", []);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
 
         // Act
@@ -62,7 +62,7 @@ public class RecipeCreateTests
     {
         // Arrange
         var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
-        var dto = new RecipeCreateDto(1, "SomeValidTitle", "", "", "", 0, "", []);
+        var dto = new RecipeCreateDto(1, "SomeValidTitle", "", "", "", "hard", "", []);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
 
         // Act
@@ -81,7 +81,7 @@ public class RecipeCreateTests
         // Arrange
         var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
         var dto = new RecipeCreateDto(1, "SomeValidTitle",
-            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "", "", 0, "", []);
+            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "", "", "Hard", "", []);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
 
         // Act
@@ -100,7 +100,7 @@ public class RecipeCreateTests
         // Arrange
         var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
         var dto = new RecipeCreateDto(1, "SomeValidTitle",
-            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", 4, "", []);
+            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", "what?", "", []);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
 
         // Act
@@ -119,7 +119,7 @@ public class RecipeCreateTests
         // Arrange
         var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
         var dto = new RecipeCreateDto(1, "SomeValidTitle",
-            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", 2,
+            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", "hard",
             "1234:1234:1234", []);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
 
@@ -139,7 +139,7 @@ public class RecipeCreateTests
         // Arrange
         var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
         var dto = new RecipeCreateDto(1, "SomeValidTitle",
-            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", 2,
+            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", "hard",
             "99.23:59:59.9990000", []);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
 
@@ -159,7 +159,7 @@ public class RecipeCreateTests
         // Arrange
         var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
         var dto = new RecipeCreateDto(1, "SomeValidTitle",
-            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", 2,
+            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", "hard",
             "6.23:59:59.9990000", []);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
 
@@ -177,10 +177,10 @@ public class RecipeCreateTests
     public async Task InvalidIngredientName_ReturnsError()
     {
         // Arrange
-        var ingredientDto = new IngredientDto("um", 1, 0);
+        var ingredientDto = new IngredientDto("um", 1, "grams");
         var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
         var dto = new RecipeCreateDto(1, "SomeValidTitle",
-            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", 2,
+            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", "hard",
             "6.23:59:59.9990000", [ingredientDto]);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
 
@@ -198,10 +198,10 @@ public class RecipeCreateTests
     public async Task InvalidIngredientCount_ZeroCount_ReturnsError()
     {
         // Arrange
-        var ingredientDto = new IngredientDto("egg", 0, 0);
+        var ingredientDto = new IngredientDto("egg", 0, "pieces");
         var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
         var dto = new RecipeCreateDto(1, "SomeValidTitle",
-            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", 2,
+            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", "Hard",
             "6.23:59:59.9990000", [ingredientDto]);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
 
@@ -219,10 +219,10 @@ public class RecipeCreateTests
     public async Task InvalidIngredientCount_TooMany_ReturnsError()
     {
         // Arrange
-        var ingredientDto = new IngredientDto("egg", 1_000_000, 0);
+        var ingredientDto = new IngredientDto("egg", 1_000_000, "pieces");
         var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
         var dto = new RecipeCreateDto(1, "SomeValidTitle",
-            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", 2,
+            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", "hard",
             "6.23:59:59.9990000", [ingredientDto]);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
 
@@ -240,10 +240,10 @@ public class RecipeCreateTests
     public async Task InvalidIngredientMeasurementUnit_ReturnsError()
     {
         // Arrange
-        var ingredientDto = new IngredientDto("egg", 5, -1);
+        var ingredientDto = new IngredientDto("egg", 5, "what");
         var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
         var dto = new RecipeCreateDto(1, "SomeValidTitle",
-            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", 2,
+            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", "hard",
             "6.23:59:59.9990000", [ingredientDto]);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
 
@@ -262,10 +262,10 @@ public class RecipeCreateTests
     {
         // Arrange
         const int recipeId = 666_69;
-        var ingredientDto = new IngredientDto("egg", 5, (int)IngredientType.Pieces);
+        var ingredientDto = new IngredientDto("egg", 5, "pieces");
         var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
         var dto = new RecipeCreateDto(1, "SomeValidTitle",
-            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", 2,
+            "SomeValidDescriptionSomeValidDescriptionSomeValidDescription", "SomeValidInstruction", "", "hard",
             "6.23:59:59.9990000", [ingredientDto]);
         _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
         _recipeRepoMock.Setup(x => x.InsertAsync(It.IsAny<Recipe>())).ReturnsAsync(new RecipeId(recipeId));
