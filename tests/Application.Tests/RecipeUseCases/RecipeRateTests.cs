@@ -61,7 +61,7 @@ public class RecipeRateTests
         _repoMock.Verify(x => x.SearchByIdAsync(It.IsAny<RecipeId>()), Times.Exactly(3));
         _repoMock.Verify(x => x.RateAsync(It.IsAny<RecipeId>(), It.IsAny<UserId>(), It.IsAny<Stars>()), Times.Never);
     }
-    
+
     [Fact]
     public async Task UserIsAuthor_ReturnsError()
     {

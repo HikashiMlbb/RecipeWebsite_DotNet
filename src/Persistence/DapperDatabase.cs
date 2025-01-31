@@ -2,7 +2,7 @@ using Dapper;
 
 namespace Persistence;
 
-public class DapperDatabase
+public static class DapperDatabase
 {
     public static void Initialize(DapperConnectionFactory factory)
     {
@@ -30,7 +30,7 @@ public class DapperDatabase
                                               CONSTRAINT Username_Unique UNIQUE(Username)
                                             );
                                             """;
-    
+
     private const string CreateRecipesTable = """
                                               CREATE TABLE IF NOT EXISTS Recipes (
                                                   Id SERIAL PRIMARY KEY,
@@ -65,7 +65,7 @@ public class DapperDatabase
                                                       Unit TEXT NOT NULL
                                                   );
                                                   """;
-    
+
     private const string CreateCommentsTable = """
                                                CREATE TABLE IF NOT EXISTS Comments (
                                                    Id BIGSERIAL PRIMARY KEY,
@@ -75,54 +75,54 @@ public class DapperDatabase
                                                    Published_At TIMESTAMP WITH TIME ZONE NOT NULL
                                                );
                                                """;
-    
+
     private const string CreateRatingTriggerFunction = """
-                                                        CREATE OR REPLACE FUNCTION On_Recipe_Rated() RETURNS TRIGGER AS $$
-                                                        BEGIN
-                                                            IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
-                                                                UPDATE Recipes SET 
-                                                                    Votes = (SELECT COUNT(*) FROM Recipe_Ratings WHERE Recipe_Id = NEW.Recipe_Id),
-                                                                    Rating = (SELECT AVG(Rate) FROM Recipe_Ratings WHERE Recipe_Id = NEW.Recipe_Id)
-                                                                WHERE Id = NEW.Recipe_Id;
-                                                                RETURN NEW;
-                                                            ELSIF TG_OP = 'DELETE' THEN
-                                                                UPDATE Recipes SET 
-                                                                    Votes = (SELECT COUNT(*) FROM Recipe_Ratings WHERE Recipe_Id = OLD.Recipe_Id),
-                                                                    Rating = (SELECT COALESCE(AVG(Rate), 0) FROM Recipe_Ratings WHERE Recipe_Id = OLD.Recipe_Id)
-                                                                WHERE Id = OLD.Recipe_Id;
-                                                                RETURN OLD;
-                                                            END IF;
-                                                            
-                                                            RETURN NULL;
-                                                        END;
-                                                        $$ LANGUAGE plpgsql;
-                                                        """;
-    
+                                                       CREATE OR REPLACE FUNCTION On_Recipe_Rated() RETURNS TRIGGER AS $$
+                                                       BEGIN
+                                                           IF TG_OP = 'INSERT' OR TG_OP = 'UPDATE' THEN
+                                                               UPDATE Recipes SET 
+                                                                   Votes = (SELECT COUNT(*) FROM Recipe_Ratings WHERE Recipe_Id = NEW.Recipe_Id),
+                                                                   Rating = (SELECT AVG(Rate) FROM Recipe_Ratings WHERE Recipe_Id = NEW.Recipe_Id)
+                                                               WHERE Id = NEW.Recipe_Id;
+                                                               RETURN NEW;
+                                                           ELSIF TG_OP = 'DELETE' THEN
+                                                               UPDATE Recipes SET 
+                                                                   Votes = (SELECT COUNT(*) FROM Recipe_Ratings WHERE Recipe_Id = OLD.Recipe_Id),
+                                                                   Rating = (SELECT COALESCE(AVG(Rate), 0) FROM Recipe_Ratings WHERE Recipe_Id = OLD.Recipe_Id)
+                                                               WHERE Id = OLD.Recipe_Id;
+                                                               RETURN OLD;
+                                                           END IF;
+                                                           
+                                                           RETURN NULL;
+                                                       END;
+                                                       $$ LANGUAGE plpgsql;
+                                                       """;
+
     private const string CreateRatingTrigger = """
                                                CREATE OR REPLACE TRIGGER Recipe_Rated_Trigger AFTER INSERT OR UPDATE OR DELETE 
                                                    ON Recipe_Ratings
                                                    FOR EACH ROW
                                                    EXECUTE PROCEDURE On_Recipe_Rated();
                                                """;
-    
+
     private const string CreateRateFunction = """
-                                                CREATE OR REPLACE FUNCTION Rate_Recipe(_recipe_id INT, _user_id INT, _rate INT) RETURNS INT AS $$
-                                                    DECLARE
-                                                        result INT;
-                                                    BEGIN
-                                                        SELECT Rate INTO result FROM Recipe_Ratings WHERE Recipe_Id = _recipe_id AND User_Id = _user_id AND Rate = _rate;
-                                                        IF FOUND THEN
-                                                            DELETE FROM Recipe_Ratings WHERE Recipe_Id = _recipe_id AND User_Id = _user_id;
-                                                            RETURN 0;
-                                                        END IF; 
-                                                            
-                                                        INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
-                                                        VALUES (_recipe_id, _user_id, _rate)
-                                                        ON CONFLICT (Recipe_Id, User_Id) DO UPDATE SET Rate = EXCLUDED.Rate RETURNING Recipe_Ratings.Rate INTO result;
-                                                        RETURN result;
-                                                    END;
-                                                $$ LANGUAGE plpgsql;
-                                                """;
+                                              CREATE OR REPLACE FUNCTION Rate_Recipe(_recipe_id INT, _user_id INT, _rate INT) RETURNS INT AS $$
+                                                  DECLARE
+                                                      result INT;
+                                                  BEGIN
+                                                      SELECT Rate INTO result FROM Recipe_Ratings WHERE Recipe_Id = _recipe_id AND User_Id = _user_id AND Rate = _rate;
+                                                      IF FOUND THEN
+                                                          DELETE FROM Recipe_Ratings WHERE Recipe_Id = _recipe_id AND User_Id = _user_id;
+                                                          RETURN 0;
+                                                      END IF; 
+                                                          
+                                                      INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                                                      VALUES (_recipe_id, _user_id, _rate)
+                                                      ON CONFLICT (Recipe_Id, User_Id) DO UPDATE SET Rate = EXCLUDED.Rate RETURNING Recipe_Ratings.Rate INTO result;
+                                                      RETURN result;
+                                                  END;
+                                              $$ LANGUAGE plpgsql;
+                                              """;
 
     #endregion
 }

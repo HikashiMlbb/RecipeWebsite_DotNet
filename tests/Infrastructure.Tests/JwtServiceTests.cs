@@ -1,7 +1,6 @@
 // ReSharper disable InconsistentNaming
 
 using System.IdentityModel.Tokens.Jwt;
-using Application.Users.Services;
 using Domain.UserEntity;
 using Infrastructure.Services;
 
@@ -9,18 +8,18 @@ namespace Infrastructure.Tests;
 
 public class JwtServiceTests
 {
-    private readonly JwtService _jwtService;
     private readonly JwtDescriptorConfig _config;
+    private readonly JwtService _jwtService;
 
     public JwtServiceTests()
     {
-        _config = new JwtDescriptorConfig()
+        _config = new JwtDescriptorConfig
         {
             Expires = null,
             Issuer = "TestIssuer",
             SigningKey = "SomeVeryLongSigningKey$$SomeVeryLongSigningKey$$SomeVeryLongSigningKey"
         };
-        
+
         _jwtService = new JwtService(_config);
     }
 
@@ -44,7 +43,7 @@ public class JwtServiceTests
         Assert.NotNull(userIdClaim);
         Assert.Equal(userId.Value.ToString(), userIdClaim.Value);
     }
-    
+
     [Fact]
     public async Task SignTokenAsync_Expired()
     {

@@ -16,4 +16,3 @@ public class RecipeDatabaseDto
     public ICollection<IngredientDatabaseDto> Ingredients { get; set; } = [];
     public ICollection<CommentDatabaseDto> Comments { get; set; } = [];
 }
-    

@@ -5,6 +5,7 @@ using Domain.RecipeEntity;
 using Domain.UserEntity;
 using Persistence.Repositories;
 using Testcontainers.PostgreSql;
+
 // ReSharper disable InconsistentNaming
 
 namespace Persistence.Tests;
@@ -22,16 +23,30 @@ public class RecipeRepositoryTests : IAsyncLifetime
         _container = builder.Build();
     }
 
+    public async Task InitializeAsync()
+    {
+        await _container.StartAsync();
+
+        DapperDatabase.Initialize(new DapperConnectionFactory(_container.GetConnectionString()));
+    }
+
+    public async Task DisposeAsync()
+    {
+        await _container.StopAsync();
+        await _container.DisposeAsync();
+    }
+
     [Fact]
     public async Task InsertRecipe_WithoutIngredients_ReturnsRecipeId()
     {
         #region Arrange
-        
+
         _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
 
-        var userId = db.QueryFirst<int>("INSERT INTO Users VALUES (DEFAULT, 'Vovan', 'Password', 'Classic') RETURNING Id;");
+        var userId =
+            db.QueryFirst<int>("INSERT INTO Users VALUES (DEFAULT, 'Vovan', 'Password', 'Classic') RETURNING Id;");
         var recipe = new Recipe(
             new UserId(userId),
             RecipeTitle.Create("SomeRecipeTitle").Value!,
@@ -57,12 +72,12 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task InsertRecipe_IncludedIngredients_ReturnsRecipeId()
     {
         #region Arrange
-        
+
         _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
@@ -74,7 +89,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Ingredient.Create("Some Two Ingredient Name", 200, IngredientType.Grams).Value!,
             Ingredient.Create("Some Three Ingredient Name", 3, IngredientType.Pieces).Value!
         };
-        
+
         var recipe = new Recipe(
             new UserId(userId),
             RecipeTitle.Create("SomeRecipeTitle").Value!,
@@ -111,7 +126,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
-        
+
         #endregion
 
         #region Act
@@ -126,7 +141,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchRecipeById_WithoutIngredients_WithoutComments_ReturnsRecipe()
     {
@@ -141,16 +156,17 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         await db.ExecuteAsync("INSERT INTO Users VALUES (@Id, 'Vovan', 'A1234', 'classic')", new
         {
-            @Id = userId.Value
+            Id = userId.Value
         });
-        
-        await db.ExecuteAsync("INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, 'D', 'I', 'Img', 'hard', now(), '2h', 0, 0);", new
-        {
-            @Id = recipeId.Value,
-            @AuthorId = userId.Value,
-            @Title = title.Value
-        });
-        
+
+        await db.ExecuteAsync(
+            "INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, 'D', 'I', 'Img', 'hard', now(), '2h', 0, 0);", new
+            {
+                Id = recipeId.Value,
+                AuthorId = userId.Value,
+                Title = title.Value
+            });
+
         #endregion
 
         #region Act
@@ -169,7 +185,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchRecipeById_IncludedIngredients_WithoutComments_ReturnsRecipeWithIngredients()
     {
@@ -190,33 +206,34 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         await db.ExecuteAsync("INSERT INTO Users VALUES (@Id, 'Vovan', 'A1234', 'classic')", new
         {
-            @Id = userId.Value
+            Id = userId.Value
         });
-        
-        await db.ExecuteAsync("INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, 'D', 'I', 'Img', 'hard', now(), '2h', 0, 0);", new
-        {
-            @Id = recipeId.Value,
-            @AuthorId = userId.Value,
-            @Title = title.Value
-        });
+
+        await db.ExecuteAsync(
+            "INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, 'D', 'I', 'Img', 'hard', now(), '2h', 0, 0);", new
+            {
+                Id = recipeId.Value,
+                AuthorId = userId.Value,
+                Title = title.Value
+            });
 
         await db.ExecuteAsync(@"INSERT INTO Ingredients (Recipe_Id, Name, Count, Unit)
                 VALUES (@RecipeId, @Name1, @Count1, @Unit1),
                 (@RecipeId, @Name2, @Count2, @Unit2),
                 (@RecipeId, @Name3, @Count3, @Unit3)", new
         {
-            @RecipeId = recipeId.Value,
-            @Name1 = ingredients[0].Name,
-            @Count1 = ingredients[0].Count,
-            @Unit1 = ingredients[0].UnitType.ToString(),
-            @Name2 = ingredients[1].Name,
-            @Count2 = ingredients[1].Count,
-            @Unit2 = ingredients[1].UnitType.ToString(),
-            @Name3 = ingredients[2].Name,
-            @Count3 = ingredients[2].Count,
-            @Unit3 = ingredients[2].UnitType.ToString(),
+            RecipeId = recipeId.Value,
+            Name1 = ingredients[0].Name,
+            Count1 = ingredients[0].Count,
+            Unit1 = ingredients[0].UnitType.ToString(),
+            Name2 = ingredients[1].Name,
+            Count2 = ingredients[1].Count,
+            Unit2 = ingredients[1].UnitType.ToString(),
+            Name3 = ingredients[2].Name,
+            Count3 = ingredients[2].Count,
+            Unit3 = ingredients[2].UnitType.ToString()
         });
-        
+
         #endregion
 
         #region Act
@@ -235,10 +252,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
         Assert.Contains(ingredients[1], recipe.Ingredients);
         Assert.Contains(ingredients[2], recipe.Ingredients);
         Assert.Empty(recipe.Comments);
-        
+
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchRecipeById_IncludedIngredients_IncludedComments_ReturnsRecipeWithIngredientsAndComments()
     {
@@ -255,43 +272,49 @@ public class RecipeRepositoryTests : IAsyncLifetime
         };
         var comments = new[]
         {
-            new Comment(new User { Id = userId, Username = Username.Create("Vovan").Value! }, "Very Interesting!", DateTimeOffset.UtcNow),
-            new Comment(new User { Id = new UserId(70), Username = Username.Create("Petr").Value! }, "I am first!", DateTimeOffset.Now - TimeSpan.FromDays(40)),
-            new Comment(new User { Id = new UserId(71), Username = Username.Create("zxcursed").Value! }, "So delicious! I love it!", DateTimeOffset.UtcNow - TimeSpan.FromDays(14))
+            new Comment(new User { Id = userId, Username = Username.Create("Vovan").Value! }, "Very Interesting!",
+                DateTimeOffset.UtcNow),
+            new Comment(new User { Id = new UserId(70), Username = Username.Create("Petr").Value! }, "I am first!",
+                DateTimeOffset.Now - TimeSpan.FromDays(40)),
+            new Comment(new User { Id = new UserId(71), Username = Username.Create("zxcursed").Value! },
+                "So delicious! I love it!", DateTimeOffset.UtcNow - TimeSpan.FromDays(14))
         };
         _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
 
-        await db.ExecuteAsync("INSERT INTO Users VALUES (@Id, 'Vovan', 'A1234', 'classic'), (70, 'Petr', 'SomePassword', 'classic'), (71, 'zxcursed', 'AnotherPassword', 'admin');", new
-        {
-            @Id = userId.Value
-        });
-        
-        await db.ExecuteAsync("INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, 'D', 'I', 'Img', 'hard', now(), '2h', 0, 0);", new
-        {
-            @Id = recipeId.Value,
-            @AuthorId = userId.Value,
-            @Title = title.Value
-        });
+        await db.ExecuteAsync(
+            "INSERT INTO Users VALUES (@Id, 'Vovan', 'A1234', 'classic'), (70, 'Petr', 'SomePassword', 'classic'), (71, 'zxcursed', 'AnotherPassword', 'admin');",
+            new
+            {
+                Id = userId.Value
+            });
+
+        await db.ExecuteAsync(
+            "INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, 'D', 'I', 'Img', 'hard', now(), '2h', 0, 0);", new
+            {
+                Id = recipeId.Value,
+                AuthorId = userId.Value,
+                Title = title.Value
+            });
 
         await db.ExecuteAsync("""
-                                  INSERT INTO Ingredients (Recipe_Id, Name, Count, Unit)
-                                                  VALUES (@RecipeId, @Name1, @Count1, @Unit1),
-                                                  (@RecipeId, @Name2, @Count2, @Unit2),
-                                                  (@RecipeId, @Name3, @Count3, @Unit3)
-                                  """, new
+                              INSERT INTO Ingredients (Recipe_Id, Name, Count, Unit)
+                                              VALUES (@RecipeId, @Name1, @Count1, @Unit1),
+                                              (@RecipeId, @Name2, @Count2, @Unit2),
+                                              (@RecipeId, @Name3, @Count3, @Unit3)
+                              """, new
         {
-            @RecipeId = recipeId.Value,
-            @Name1 = ingredients[0].Name,
-            @Count1 = ingredients[0].Count,
-            @Unit1 = ingredients[0].UnitType.ToString(),
-            @Name2 = ingredients[1].Name,
-            @Count2 = ingredients[1].Count,
-            @Unit2 = ingredients[1].UnitType.ToString(),
-            @Name3 = ingredients[2].Name,
-            @Count3 = ingredients[2].Count,
-            @Unit3 = ingredients[2].UnitType.ToString(),
+            RecipeId = recipeId.Value,
+            Name1 = ingredients[0].Name,
+            Count1 = ingredients[0].Count,
+            Unit1 = ingredients[0].UnitType.ToString(),
+            Name2 = ingredients[1].Name,
+            Count2 = ingredients[1].Count,
+            Unit2 = ingredients[1].UnitType.ToString(),
+            Name3 = ingredients[2].Name,
+            Count3 = ingredients[2].Count,
+            Unit3 = ingredients[2].UnitType.ToString()
         });
 
         await db.ExecuteAsync(@"INSERT INTO Comments (Recipe_Id, User_Id, Content, Published_At)
@@ -299,17 +322,18 @@ public class RecipeRepositoryTests : IAsyncLifetime
                        (@RecipeId, @UserId2, @Content2, @PublishedAt2),
                        (@RecipeId, @UserId3, @Content3, @PublishedAt3);", new
         {
-            @RecipeId = recipeId.Value,
-            @UserId = userId.Value,
-            @UserId2 = 70,
-            @UserId3 = 71,
-            @Content1 = comments[0].Content,
-            @PublishedAt1 = comments[0].PublishedAt.ToUniversalTime(),
-            @Content2 = comments[1].Content,
-            @PublishedAt2 = comments[1].PublishedAt.ToUniversalTime(),
-            @Content3 = comments[2].Content,
-            @PublishedAt3 = comments[2].PublishedAt.ToUniversalTime(),
+            RecipeId = recipeId.Value,
+            UserId = userId.Value,
+            UserId2 = 70,
+            UserId3 = 71,
+            Content1 = comments[0].Content,
+            PublishedAt1 = comments[0].PublishedAt.ToUniversalTime(),
+            Content2 = comments[1].Content,
+            PublishedAt2 = comments[1].PublishedAt.ToUniversalTime(),
+            Content3 = comments[2].Content,
+            PublishedAt3 = comments[2].PublishedAt.ToUniversalTime()
         });
+
         #endregion
 
         #region Act
@@ -329,7 +353,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         Assert.Contains(ingredients[2], recipe.Ingredients);
         Assert.NotEmpty(recipe.Comments);
         Assert.Equal(3, recipe.Comments.Count);
-        
+
         #endregion
     }
 
@@ -345,7 +369,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.ExecuteAsync("""
                               INSERT INTO Users (Id, Username, Password, Role)
                               VALUES (123, 'Peter', 'Password1234', 'classic');
-                        
+
                               INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
                               VALUES (456, 123, 'RecipeTitle', 'RecipeD', 'RI', 'IMG', 'hard', now(), '2h', 0, 0);
                               """);
@@ -355,7 +379,8 @@ public class RecipeRepositoryTests : IAsyncLifetime
         #region Act
 
         var result = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
-        var (rate, votes) = await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
+        var (rate, votes) =
+            await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
 
         #endregion
 
@@ -392,7 +417,8 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         var rate1 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
         var rate2 = await _repo.RateAsync(new RecipeId(456), new UserId(321), Stars.Three);
-        var (rate, votes) = await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
+        var (rate, votes) =
+            await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
 
         #endregion
 
@@ -405,7 +431,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task RateAsync_ChangeRate()
     {
@@ -429,7 +455,8 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         var rate1 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
         var rate2 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Three);
-        var (rate, votes) = await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
+        var (rate, votes) =
+            await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
 
         #endregion
 
@@ -442,7 +469,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task RateAsync_UndoRate()
     {
@@ -466,7 +493,8 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         var rate1 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
         var rate2 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
-        var (rate, votes) = await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
+        var (rate, votes) =
+            await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
 
         #endregion
 
@@ -501,8 +529,8 @@ public class RecipeRepositoryTests : IAsyncLifetime
                               VALUES (@RecipeId, @UserId, 'T', 'D', 'I', 'IMG', 'hard', now(), '2h', 0, 0);
                               """, new
         {
-            @UserId = userId.Value,
-            @RecipeId = recipeId.Value
+            UserId = userId.Value,
+            RecipeId = recipeId.Value
         });
 
         #endregion
@@ -510,7 +538,9 @@ public class RecipeRepositoryTests : IAsyncLifetime
         #region Act
 
         await _repo.CommentAsync(recipeId, comment);
-        var (commentRecipeId, commentAuthorId, content, publicationDate) = await db.QueryFirstAsync<(int, int, string, DateTimeOffset)>("SELECT Recipe_Id, User_Id, Content, Published_At FROM Comments;");
+        var (commentRecipeId, commentAuthorId, content, publicationDate) =
+            await db.QueryFirstAsync<(int, int, string, DateTimeOffset)>(
+                "SELECT Recipe_Id, User_Id, Content, Published_At FROM Comments;");
 
         #endregion
 
@@ -520,7 +550,6 @@ public class RecipeRepositoryTests : IAsyncLifetime
         Assert.Equal(recipeId.Value, commentRecipeId);
         Assert.Equal(comment.Content, content);
         Assert.Equal(comment.PublishedAt, publicationDate, TimeSpan.FromMilliseconds(1));
-
 
         #endregion
     }
@@ -546,7 +575,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByPageAsync_FullOnePage_PopularFirst()
     {
@@ -603,7 +632,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByPageAsync_FullOnePage_NewestFirst()
     {
@@ -662,7 +691,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByPageAsync_SlicedFirstPage_PopularFirst()
     {
@@ -718,7 +747,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByPageAsync_SlicedFirstPage_NewestFirst()
     {
@@ -774,7 +803,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByPageAsync_SlicedSecondPage_PopularFirst()
     {
@@ -829,7 +858,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByPageAsync_SlicedSecondPage_NewestFirst()
     {
@@ -885,7 +914,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByPageAsync_SlicedThirdPage_PopularFirst()
     {
@@ -941,7 +970,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByPageAsync_SlicedThirdPage_NewestFirst()
     {
@@ -996,7 +1025,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByQueryAsync_ReturnsNull()
     {
@@ -1018,7 +1047,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByQueryAsync_WithRecipes_NotFound()
     {
@@ -1054,7 +1083,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByQueryAsync_WithRecipes_Found_OnlyTitle()
     {
@@ -1091,7 +1120,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByQueryAsync_WithRecipes_Found_OnlyDescription()
     {
@@ -1128,7 +1157,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task SearchByQueryAsync_WithRecipes_Found_BothTitleAndDescription()
     {
@@ -1185,28 +1214,28 @@ public class RecipeRepositoryTests : IAsyncLifetime
                               """);
 
         #endregion
-        
+
         #region Act
 
         await _repo.UpdateAsync(updateConfig);
         var title = await db.QueryFirstAsync<string>("SELECT Title FROM Recipes WHERE Id = 15");
 
         #endregion
-        
+
         #region Assert
 
         Assert.Equal("Title", title);
 
         #endregion
     }
-    
+
     [Fact]
     public async Task Update_FullUpdate_ExcludedIngredients()
     {
         #region Arrage
 
         var updateConfig = new RecipeUpdateConfig(
-            new RecipeId(15), 
+            new RecipeId(15),
             new RecipeTitle("Some New Title"),
             new RecipeDescription("Some New Description"),
             new RecipeInstruction("Some New Instruction"),
@@ -1226,14 +1255,16 @@ public class RecipeRepositoryTests : IAsyncLifetime
                               """);
 
         #endregion
-        
+
         #region Act
 
         await _repo.UpdateAsync(updateConfig);
-        var (title, description, instruction, imageName, difficulty, cookingTime) = await db.QueryFirstAsync<(string, string, string, string, string, TimeSpan)>("SELECT Title, Description, Instruction, Image_Name, Difficulty, Cooking_Time FROM Recipes WHERE Id = 15");
+        var (title, description, instruction, imageName, difficulty, cookingTime) =
+            await db.QueryFirstAsync<(string, string, string, string, string, TimeSpan)>(
+                "SELECT Title, Description, Instruction, Image_Name, Difficulty, Cooking_Time FROM Recipes WHERE Id = 15");
 
         #endregion
-        
+
         #region Assert
 
         Assert.Equal(updateConfig.Title!.Value, title);
@@ -1245,7 +1276,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #endregion
     }
-    
+
     [Fact]
     public async Task Update_SomeIngredients_To_EmptyIngredients()
     {
@@ -1270,29 +1301,30 @@ public class RecipeRepositoryTests : IAsyncLifetime
                               """);
 
         #endregion
-        
+
         #region Act
 
         await _repo.UpdateAsync(updateConfig);
         var ingredientCount = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Ingredients WHERE Recipe_Id = 15;");
 
         #endregion
-        
+
         #region Assert
-        
+
         Assert.Equal(updateConfig.Ingredients!.Count, ingredientCount);
-        
+
         #endregion
     }
-    
+
     [Fact]
     public async Task Update_SomeIngredients_To_SomeIngredients()
     {
         #region Arrage
 
         var updateConfig = new RecipeUpdateConfig(
-            new RecipeId(15), 
-            Ingredients: [
+            new RecipeId(15),
+            Ingredients:
+            [
                 new Ingredient("Coconut", 5, IngredientType.Pieces),
                 new Ingredient("Milk", 5, IngredientType.Pieces),
                 new Ingredient("Sugar", 5, IngredientType.Pieces)
@@ -1314,26 +1346,26 @@ public class RecipeRepositoryTests : IAsyncLifetime
                               """);
 
         #endregion
-        
+
         #region Act
 
         await _repo.UpdateAsync(updateConfig);
         var ingredientCount = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Ingredients WHERE Recipe_Id = 15;");
 
         #endregion
-        
+
         #region Assert
-        
+
         Assert.Equal(updateConfig.Ingredients!.Count, ingredientCount);
-        
+
         #endregion
     }
-    
+
     [Fact]
     public async Task Delete_Success()
     {
         #region Arrage
-        
+
         _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
@@ -1347,34 +1379,20 @@ public class RecipeRepositoryTests : IAsyncLifetime
                               """);
 
         #endregion
-        
+
         #region Act
 
         var userRecipesCountBefore = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Recipes WHERE Author_Id = 4;");
         await _repo.DeleteAsync(new RecipeId(15));
         var userRecipesCountAfter = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Recipes WHERE Author_Id = 4;");
 
-
         #endregion
-        
+
         #region Assert
-        
+
         Assert.Equal(1, userRecipesCountBefore);
         Assert.Equal(0, userRecipesCountAfter);
-        
-        #endregion
-    }
-    
-    public async Task InitializeAsync()
-    {
-        await _container.StartAsync();
-        
-        DapperDatabase.Initialize(new DapperConnectionFactory(_container.GetConnectionString()));
-    }
 
-    public async Task DisposeAsync()
-    {
-        await _container.StopAsync();
-        await _container.DisposeAsync();
+        #endregion
     }
 }

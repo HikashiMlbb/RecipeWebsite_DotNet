@@ -24,12 +24,12 @@ public sealed record Comment
     {
         return Create(author, content, DateTimeOffset.Now);
     }
-    
+
     public static Result<Comment> Create(User author, string content, DateTimeOffset publishedAt)
     {
         if (string.IsNullOrWhiteSpace(content) || content.Length > 1500)
             return RecipeDomainErrors.CommentLengthOutOfRange;
-        
+
         return new Comment(author, content, publishedAt);
     }
 }

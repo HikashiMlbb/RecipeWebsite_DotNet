@@ -18,7 +18,9 @@ public class RecipeGetById
         if (foundRecipe is null) return null;
 
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        foundRecipe.Comments = foundRecipe.Comments is null ? [] : foundRecipe.Comments.OrderByDescending(x => x.PublishedAt).ToList();
+        foundRecipe.Comments = foundRecipe.Comments is null
+            ? []
+            : foundRecipe.Comments.OrderByDescending(x => x.PublishedAt).ToList();
         return foundRecipe;
     }
 }

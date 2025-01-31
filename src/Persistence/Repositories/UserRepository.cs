@@ -18,13 +18,10 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
 
         var result = await db.QueryAsync<UserDatabaseDto>(sql, new
         {
-            @Username = usernameResultValue.Value
+            Username = usernameResultValue.Value
         });
 
-        if (result.FirstOrDefault() is not { } userDto)
-        {
-            return null;
-        }
+        if (result.FirstOrDefault() is not { } userDto) return null;
 
         return new User
         {
@@ -46,14 +43,14 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
                            """;
         var result = await db.QueryFirstOrDefaultAsync<int>(sql, new
         {
-            @Username = newUser.Username.Value,
-            @Password = newUser.Password.PasswordHash,
-            @Role = newUser.Role.ToString()
+            Username = newUser.Username.Value,
+            Password = newUser.Password.PasswordHash,
+            Role = newUser.Role.ToString()
         });
 
         return new UserId(result);
     }
-    
+
     /// <returns>Detailed User</returns>
     public async Task<User?> SearchByIdAsync(UserId userId)
     {
@@ -82,7 +79,7 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
                                recipes.Votes DESC,
                                recipes.Rating DESC;
                            """;
-        
+
         var result = (await db.QueryAsync<UserDatabaseDto, RecipeDatabaseDto, UserDatabaseDto>(sql,
             (userDto, recipeDto) =>
             {
@@ -93,21 +90,15 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
                 }
 
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-                if (recipeDto is not null)
-                {
-                    user.Recipes.Add(recipeDto);
-                }
+                if (recipeDto is not null) user.Recipes.Add(recipeDto);
                 return userDto;
             }, new
             {
-                @Id = userId.Value
+                Id = userId.Value
             },
             splitOn: "RecipeId")).ToList();
 
-        if (result.Count == 0)
-        {
-            return null;
-        }
+        if (result.Count == 0) return null;
 
         var userDto = result.Single();
 
@@ -118,17 +109,17 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
                 Id = new RecipeId(x.RecipeId),
                 Title = RecipeTitle.Create(x.Title).Value!,
                 ImageName = new RecipeImageName(x.ImageName),
-                Difficulty = Enum.Parse<RecipeDifficulty>(x.Difficulty, ignoreCase: true),
+                Difficulty = Enum.Parse<RecipeDifficulty>(x.Difficulty, true),
                 CookingTime = x.CookingTime,
                 Rate = new Rate(x.Rating, x.Votes)
             }).ToList() as ICollection<Recipe>;
-        
+
         return new User
         {
             Id = new UserId(userDto.UserId),
             Username = Username.Create(userDto.Username).Value!,
             Password = new Password(userDto.Password),
-            Role = Enum.Parse<UserRole>(userDto.Role, ignoreCase: true),
+            Role = Enum.Parse<UserRole>(userDto.Role, true),
             Recipes = recipes
         };
     }
@@ -141,8 +132,8 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
         const string sql = "UPDATE Users SET Password = @Password WHERE Id = @Id";
         await db.ExecuteAsync(sql, new
         {
-            @Password = newHashedPassword.PasswordHash,
-            @Id = userId.Value
+            Password = newHashedPassword.PasswordHash,
+            Id = userId.Value
         });
     }
 }

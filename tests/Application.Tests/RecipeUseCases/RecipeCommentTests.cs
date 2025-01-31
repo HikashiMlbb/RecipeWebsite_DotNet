@@ -11,14 +11,14 @@ namespace Application.Tests.RecipeUseCases;
 public class RecipeCommentTests
 {
     private readonly Mock<IRecipeRepository> _repoMock;
-    private readonly Mock<IUserRepository> _userMock;
     private readonly RecipeComment _useCase;
+    private readonly Mock<IUserRepository> _userMock;
 
     public RecipeCommentTests()
     {
         _repoMock = new Mock<IRecipeRepository>();
         _userMock = new Mock<IUserRepository>();
-        
+
         _useCase = new RecipeComment(_repoMock.Object, _userMock.Object);
     }
 

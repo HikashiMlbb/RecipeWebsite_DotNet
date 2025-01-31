@@ -49,7 +49,7 @@ public class RecipeGetByIdTests
         Assert.NotNull(result);
         _repoMock.Verify(x => x.SearchByIdAsync(It.IsAny<RecipeId>()), Times.Once);
     }
-    
+
     [Fact]
     public async Task RecipeFound_SortedComments_ReturnsRecipe()
     {
