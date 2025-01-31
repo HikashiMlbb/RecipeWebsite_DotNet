@@ -996,6 +996,175 @@ public class RecipeRepositoryTests : IAsyncLifetime
         #endregion
     }
     
+    [Fact]
+    public async Task SearchByQueryAsync_ReturnsNull()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByQueryAsync("soup")).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.Empty(result);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task SearchByQueryAsync_WithRecipes_NotFound()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (101, 'Username1', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (501, 101, 'T1', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
+                                     (502, 101, 'T2', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
+                                     (503, 101, 'T3', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
+                                     (504, 101, 'T4', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
+                                     (505, 101, 'T5', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByQueryAsync("soup")).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.Empty(result);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task SearchByQueryAsync_WithRecipes_Found_OnlyTitle()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (101, 'Username1', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (501, 101, 'Brazilian Soup', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
+                                     (502, 101, 'Australian Soup', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
+                                     (503, 101, 'Russian Soup', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
+                                     (504, 101, 'Indian Soup', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
+                                     (505, 101, 'Bolon''eze', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByQueryAsync("soup")).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.NotEmpty(result);
+        Assert.Equal(4, result.Count);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task SearchByQueryAsync_WithRecipes_Found_OnlyDescription()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (101, 'Username1', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (501, 101, 'Brazilian Soup', 'Some recipe for soup from Brazil', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
+                                     (502, 101, 'Australian Soup', 'Some recipe for soup from Australia', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
+                                     (503, 101, 'Russian Soup', 'Some recipe for soup from Russia', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
+                                     (504, 101, 'Indian Soup', 'Some recipe for soup from India', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
+                                     (505, 101, 'Bolon''eze', 'Some recipe for bolon''eze from Italy', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByQueryAsync("italy")).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.NotEmpty(result);
+        Assert.Single(result);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task SearchByQueryAsync_WithRecipes_Found_BothTitleAndDescription()
+    {
+        #region Arrange
+
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (101, 'Username1', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (501, 101, 'Brazilian Soup key', 'Some recipe for soup from Brazil key', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
+                                     (502, 101, 'Australian Soup key', 'Some recipe for soup from Australia', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
+                                     (503, 101, 'Russian Soup', 'Some recipe for soup from Russia key', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
+                                     (504, 101, 'Indian Soup', 'Some recipe for soup from India', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
+                                     (505, 101, 'Bolon''eze', 'Some recipe for bolon''eze from Italy', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
+                              """);
+
+        #endregion
+
+        #region Act
+
+        var result = (await _repo.SearchByQueryAsync("key")).ToList();
+
+        #endregion
+
+        #region Assert
+
+        Assert.NotEmpty(result);
+        Assert.Equal(3, result.Count);
+
+        #endregion
+    }
+    
     public async Task InitializeAsync()
     {
         await _container.StartAsync();

@@ -254,9 +254,42 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         }).ToList();
     }
 
-    public Task<IEnumerable<Recipe>> SearchByQueryAsync(string query)
+    public async Task<IEnumerable<Recipe>> SearchByQueryAsync(string query)
     {
-        throw new NotImplementedException();
+        await using var db = factory.Create();
+        await db.OpenAsync();
+
+        const string sql = """
+                            SELECT
+                                 Id AS RecipeId,
+                                 Title,
+                                 Image_Name AS ImageName,
+                                 Difficulty,
+                                 Cooking_Time AS CookingTime,
+                                 Rating,
+                                 Votes
+                            FROM Recipes
+                            WHERE LOWER(Title) LIKE LOWER(@Query) OR LOWER(Description) LIKE LOWER(@Query)
+                            ORDER BY 
+                                CASE
+                                    WHEN LOWER(Title) LIKE LOWER(@Query) THEN 1
+                                    ELSE 2
+                                END;
+                            """;
+
+        var result = await db.QueryAsync<RecipeDatabaseDto>(sql, new
+        {
+            @Query = $"%{query}%"
+        });
+
+        return result.Select(x => new Recipe
+        {
+            Id = new RecipeId(x.RecipeId),
+            Title = new RecipeTitle(x.Title),
+            ImageName = new RecipeImageName(x.ImageName),
+            Difficulty = Enum.Parse<RecipeDifficulty>(x.Difficulty, ignoreCase: true),
+            Rate = new Rate(x.Rating, x.Votes)
+        });
     }
 
     public Task UpdateAsync(RecipeUpdateConfig updateConfig)
