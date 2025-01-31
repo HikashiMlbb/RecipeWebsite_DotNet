@@ -1329,6 +1329,42 @@ public class RecipeRepositoryTests : IAsyncLifetime
         #endregion
     }
     
+    [Fact]
+    public async Task Delete_Success()
+    {
+        #region Arrage
+        
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (4, 'Username', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (15, 4, 'Title', 'Description', 'Instruction', 'Image Name', 'hard', now(), '2h', 0, 0);
+                              """);
+
+        #endregion
+        
+        #region Act
+
+        var userRecipesCountBefore = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Recipes WHERE Author_Id = 4;");
+        await _repo.DeleteAsync(new RecipeId(15));
+        var userRecipesCountAfter = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Recipes WHERE Author_Id = 4;");
+
+
+        #endregion
+        
+        #region Assert
+        
+        Assert.Equal(1, userRecipesCountBefore);
+        Assert.Equal(0, userRecipesCountAfter);
+        
+        #endregion
+    }
+    
     public async Task InitializeAsync()
     {
         await _container.StartAsync();

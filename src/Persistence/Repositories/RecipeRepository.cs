@@ -357,8 +357,12 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         await transaction.CommitAsync();
     }
 
-    public Task DeleteAsync(RecipeId typedRecipeId)
+    public async Task DeleteAsync(RecipeId recipeId)
     {
-        throw new NotImplementedException();
+        await using var db = factory.Create();
+        await db.OpenAsync();
+
+        const string sql = "DELETE FROM Recipes WHERE Id = @Id;";
+        await db.ExecuteAsync(sql, new { @Id = recipeId.Value });
     }
 }
