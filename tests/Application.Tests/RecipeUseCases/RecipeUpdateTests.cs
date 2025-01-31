@@ -116,7 +116,7 @@ public class RecipeUpdateTests
     {
         // Arrange
         var recipe = new Recipe { AuthorId = new UserId(26) };
-        var dto = new RecipeUpdateDto(13, 26, Difficulty: 3);
+        var dto = new RecipeUpdateDto(13, 26, Difficulty: "INvaLID");
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
         // Act
@@ -206,7 +206,7 @@ public class RecipeUpdateTests
     {
         // Arrange
         var recipe = new Recipe { AuthorId = new UserId(26) };
-        var dto = new RecipeUpdateDto(13, 26, Ingredients: [new IngredientDto(".", 1, 0)]);
+        var dto = new RecipeUpdateDto(13, 26, Ingredients: [new IngredientDto(".", 1, "grams")]);
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
         // Act
@@ -224,7 +224,7 @@ public class RecipeUpdateTests
     {
         // Arrange
         var recipe = new Recipe { AuthorId = new UserId(26) };
-        var dto = new RecipeUpdateDto(13, 26, Ingredients: [new IngredientDto("egg", 0, 0)]);
+        var dto = new RecipeUpdateDto(13, 26, Ingredients: [new IngredientDto("egg", 0, "grams")]);
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
         // Act
@@ -242,7 +242,7 @@ public class RecipeUpdateTests
     {
         // Arrange
         var recipe = new Recipe { AuthorId = new UserId(26) };
-        var dto = new RecipeUpdateDto(13, 26, Ingredients: [new IngredientDto("egg", 1_000_000, 0)]);
+        var dto = new RecipeUpdateDto(13, 26, Ingredients: [new IngredientDto("egg", 1_000_000, "Grams")]);
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
         // Act
@@ -260,7 +260,7 @@ public class RecipeUpdateTests
     {
         // Arrange
         var recipe = new Recipe { AuthorId = new UserId(26) };
-        var dto = new RecipeUpdateDto(13, 26, Ingredients: [new IngredientDto("egg", 1_000, -1)]);
+        var dto = new RecipeUpdateDto(13, 26, Ingredients: [new IngredientDto("egg", 1_000, "Unknown")]);
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
         // Act
@@ -285,9 +285,9 @@ public class RecipeUpdateTests
             "SomeValidDescriptionSomeValidDescriptionSomeValidDescription",
             "SomeValidInstruction",
             "newImageNameGUID",
-            2,
+            "hard",
             "12:00",
-            [new IngredientDto("egg", 1_000, 0)]);
+            [new IngredientDto("egg", 1_000, "pieces")]);
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
         // Act

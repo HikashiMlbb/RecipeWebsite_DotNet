@@ -25,4 +25,11 @@ public sealed record Ingredient
 
         return new Ingredient(name, count, unitType);
     }
+    
+    public static Result<Ingredient> Create(string name, decimal count, string unitType)
+    {
+        return !Enum.TryParse<IngredientType>(unitType, true, out var unit) 
+            ? RecipeDomainErrors.IngredientMeasurementUnitIsNotDefined 
+            : Create(name, count, (int)unit);
+    }
 }
