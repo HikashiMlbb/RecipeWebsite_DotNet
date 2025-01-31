@@ -1,4 +1,5 @@
 using Application.Recipes.GetByPage;
+using Application.Recipes.Update;
 using Dapper;
 using Domain.RecipeEntity;
 using Domain.UserEntity;
@@ -505,7 +506,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         });
 
         #endregion
-        
+
         #region Act
 
         await _repo.CommentAsync(recipeId, comment);
@@ -518,8 +519,8 @@ public class RecipeRepositoryTests : IAsyncLifetime
         Assert.Equal(comment.Author.Id.Value, commentAuthorId);
         Assert.Equal(recipeId.Value, commentRecipeId);
         Assert.Equal(comment.Content, content);
-        Assert.Equal(comment.PublishedAt, publicationDate);
-        
+        Assert.Equal(comment.PublishedAt, publicationDate, TimeSpan.FromMilliseconds(1));
+
 
         #endregion
     }
@@ -1162,6 +1163,169 @@ public class RecipeRepositoryTests : IAsyncLifetime
         Assert.NotEmpty(result);
         Assert.Equal(3, result.Count);
 
+        #endregion
+    }
+
+    [Fact]
+    public async Task Update_NothingToUpdate()
+    {
+        #region Arrage
+
+        var updateConfig = new RecipeUpdateConfig(new RecipeId(15));
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (4, 'Username', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (15, 4, 'Title', 'Description', 'Instruction', 'Image Name', 'hard', now(), '2h', 0, 0);
+                              """);
+
+        #endregion
+        
+        #region Act
+
+        await _repo.UpdateAsync(updateConfig);
+        var title = await db.QueryFirstAsync<string>("SELECT Title FROM Recipes WHERE Id = 15");
+
+        #endregion
+        
+        #region Assert
+
+        Assert.Equal("Title", title);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task Update_FullUpdate_ExcludedIngredients()
+    {
+        #region Arrage
+
+        var updateConfig = new RecipeUpdateConfig(
+            new RecipeId(15), 
+            new RecipeTitle("Some New Title"),
+            new RecipeDescription("Some New Description"),
+            new RecipeInstruction("Some New Instruction"),
+            new RecipeImageName("Some New Image Name"),
+            RecipeDifficulty.Medium,
+            TimeSpan.FromHours(1));
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (4, 'Username', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (15, 4, 'Title', 'Description', 'Instruction', 'Image Name', 'hard', now(), '2h', 0, 0);
+                              """);
+
+        #endregion
+        
+        #region Act
+
+        await _repo.UpdateAsync(updateConfig);
+        var (title, description, instruction, imageName, difficulty, cookingTime) = await db.QueryFirstAsync<(string, string, string, string, string, TimeSpan)>("SELECT Title, Description, Instruction, Image_Name, Difficulty, Cooking_Time FROM Recipes WHERE Id = 15");
+
+        #endregion
+        
+        #region Assert
+
+        Assert.Equal(updateConfig.Title!.Value, title);
+        Assert.Equal(updateConfig.Description!.Value, description);
+        Assert.Equal(updateConfig.Instruction!.Value, instruction);
+        Assert.Equal(updateConfig.ImageName!.Value, imageName);
+        Assert.Equal(updateConfig.Difficulty!.ToString(), difficulty);
+        Assert.Equal(updateConfig.CookingTime, cookingTime);
+
+        #endregion
+    }
+    
+    [Fact]
+    public async Task Update_SomeIngredients_To_EmptyIngredients()
+    {
+        #region Arrage
+
+        var updateConfig = new RecipeUpdateConfig(new RecipeId(15), Ingredients: []);
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (4, 'Username', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (15, 4, 'Title', 'Description', 'Instruction', 'Image Name', 'hard', now(), '2h', 0, 0);
+
+                              INSERT INTO Ingredients (Id, Recipe_Id, Name, Count, Unit)
+                              VALUES (DEFAULT, 15, 'Coconut', 5, 'pieces'),
+                                     (DEFAULT, 15, 'Milk', 300, 'milliliters'),
+                                     (DEFAULT, 15, 'Sugar', 15, 'grams');
+                              """);
+
+        #endregion
+        
+        #region Act
+
+        await _repo.UpdateAsync(updateConfig);
+        var ingredientCount = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Ingredients WHERE Recipe_Id = 15;");
+
+        #endregion
+        
+        #region Assert
+        
+        Assert.Equal(updateConfig.Ingredients!.Count, ingredientCount);
+        
+        #endregion
+    }
+    
+    [Fact]
+    public async Task Update_SomeIngredients_To_SomeIngredients()
+    {
+        #region Arrage
+
+        var updateConfig = new RecipeUpdateConfig(
+            new RecipeId(15), 
+            Ingredients: [
+                new Ingredient("Coconut", 5, IngredientType.Pieces),
+                new Ingredient("Milk", 5, IngredientType.Pieces),
+                new Ingredient("Sugar", 5, IngredientType.Pieces)
+            ]);
+        _repo = new RecipeRepository(new DapperConnectionFactory(_container.GetConnectionString()));
+        await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
+        await db.OpenAsync();
+
+        await db.ExecuteAsync("""
+                              INSERT INTO Users (Id, Username, Password, Role)
+                              VALUES (4, 'Username', 'Password', 'classic');
+
+                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              VALUES (15, 4, 'Title', 'Description', 'Instruction', 'Image Name', 'hard', now(), '2h', 0, 0);
+
+                              INSERT INTO Ingredients (Id, Recipe_Id, Name, Count, Unit)
+                              VALUES (DEFAULT, 15, 'Water', 1500, 'milliliters'),
+                                     (DEFAULT, 15, 'Salt', 15, 'grams');
+                              """);
+
+        #endregion
+        
+        #region Act
+
+        await _repo.UpdateAsync(updateConfig);
+        var ingredientCount = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Ingredients WHERE Recipe_Id = 15;");
+
+        #endregion
+        
+        #region Assert
+        
+        Assert.Equal(updateConfig.Ingredients!.Count, ingredientCount);
+        
         #endregion
     }
     

@@ -22,7 +22,7 @@ public class RecipeUpdate
         var userId = new UserId(dto.UserId);
         if (userId != foundRecipe.AuthorId) return RecipeErrors.UserIsNotAuthor;
 
-        var updateConfig = new RecipeUpdateConfig(recipeId, userId);
+        var updateConfig = new RecipeUpdateConfig(recipeId);
 
         if (dto.Title is { } title)
         {

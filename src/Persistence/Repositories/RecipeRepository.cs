@@ -1,3 +1,4 @@
+using System.Text;
 using Application.Recipes;
 using Application.Recipes.GetByPage;
 using Application.Recipes.Update;
@@ -192,7 +193,7 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
             @RecipeId = recipeId.Value,
             @UserId = comment.Author.Id.Value,
             @Content = comment.Content,
-            @PublishedAt = comment.PublishedAt.ToUniversalTime()
+            @PublishedAt = comment.PublishedAt
         });
     }
 
@@ -292,9 +293,68 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         });
     }
 
-    public Task UpdateAsync(RecipeUpdateConfig updateConfig)
+    public async Task UpdateAsync(RecipeUpdateConfig updateConfig)
     {
-        throw new NotImplementedException();
+        await using var db = factory.Create();
+        await db.OpenAsync();
+        
+        const string sqlBeginning = """
+                                    UPDATE Recipes
+                                    SET
+                                    """;
+        const string sqlEnding = "WHERE Id = @RecipeId;";
+
+        var sqlBuilder = new StringBuilder();
+        sqlBuilder.Append(sqlBeginning);
+        sqlBuilder.Append("\n\tId = @RecipeId");
+        
+        if (updateConfig.Title is not null) sqlBuilder.Append(",\n\tTitle = @Title");
+        if (updateConfig.Description is not null) sqlBuilder.Append(",\n\tDescription = @Description");
+        if (updateConfig.Instruction is not null) sqlBuilder.Append(",\n\tInstruction = @Instruction");
+        if (updateConfig.ImageName is not null) sqlBuilder.Append(",\n\tImage_Name = @ImageName");
+        if (updateConfig.Difficulty is not null) sqlBuilder.Append(",\n\tDifficulty = @Difficulty");
+        if (updateConfig.CookingTime is not null) sqlBuilder.Append(",\n\tCooking_Time = @CookingTime");
+
+        sqlBuilder.Append('\n' + sqlEnding);
+
+        var sql = sqlBuilder.ToString();
+
+        await using var transaction = await db.BeginTransactionAsync();
+        
+        await db.ExecuteAsync(sqlBuilder.ToString(), new
+        {
+            @RecipeId = updateConfig.RecipeId.Value,
+            @Title = updateConfig.Title?.Value,
+            @Description = updateConfig.Description?.Value,
+            @Instruction = updateConfig.Instruction?.Value,
+            @ImageName = updateConfig.ImageName?.Value,
+            @Difficulty = updateConfig.Difficulty?.ToString(),
+            @CookingTime = updateConfig.CookingTime
+        });
+
+        if (updateConfig.Ingredients is { } ingredients)
+        {
+            const string deleteIngredientsSql = "DELETE FROM Ingredients WHERE Recipe_Id = @RecipeId;";
+            const string insertIngredientBeginning = """
+                                                     INSERT INTO Ingredients (Id, Recipe_Id, Name, Count, Unit)
+                                                     VALUES (DEFAULT, @RecipeId, @Name, @Count, @Unit);
+                                                     """;
+
+            await db.ExecuteAsync(deleteIngredientsSql, new { @RecipeId = updateConfig.RecipeId.Value });
+
+            foreach (var ingredient in ingredients)
+            {
+                await db.ExecuteAsync(insertIngredientBeginning, new
+                {
+                    @RecipeId = updateConfig.RecipeId.Value,
+                    @Name = ingredient.Name,
+                    @Count = ingredient.Count,
+                    @Unit = ingredient.UnitType.ToString()
+                });
+            }
+        }
+
+        await transaction.CommitAsync();
     }
 
     public Task DeleteAsync(RecipeId typedRecipeId)

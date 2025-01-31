@@ -1,10 +1,13 @@
+using System.Runtime.CompilerServices;
 using SharedKernel;
+
+[assembly: InternalsVisibleTo("Persistence.Tests")]
 
 namespace Domain.RecipeEntity;
 
 public sealed record RecipeInstruction
 {
-    private RecipeInstruction(string value)
+    internal RecipeInstruction(string value)
     {
         Value = value;
     }
