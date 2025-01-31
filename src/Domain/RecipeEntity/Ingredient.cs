@@ -28,7 +28,7 @@ public sealed record Ingredient
 
         return new Ingredient(name, count, (IngredientType)unitType);
     }
-
+    
     public static Result<Ingredient> Create(string name, decimal count, IngredientType unitType)
     {
         return Create(name, count, (int)unitType);
