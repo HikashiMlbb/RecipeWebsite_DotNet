@@ -1,6 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using Application.Users.Services;
 using Domain.UserEntity;
 using Microsoft.IdentityModel.Tokens;
@@ -11,12 +10,12 @@ namespace Infrastructure.Services;
 public class JwtService : IJwtService
 {
     private readonly JwtDescriptorConfig _config;
-    
+
     public JwtService(JwtDescriptorConfig config)
     {
         _config = config;
     }
-    
+
     public async Task<string> SignTokenAsync(UserId foundUserId)
     {
         return await Task.Run(() =>

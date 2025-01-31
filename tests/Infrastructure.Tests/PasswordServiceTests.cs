@@ -1,7 +1,6 @@
 // ReSharper disable InconsistentNaming
 
 using Application.Users.Services;
-using Domain.UserEntity;
 using Infrastructure.Services;
 
 namespace Infrastructure.Tests;
@@ -29,7 +28,7 @@ public class PasswordServiceTests
         // Assert
         Assert.False(result);
     }
-    
+
     [Fact]
     public async Task PasswordIsCorrect_ReturnsTrue()
     {

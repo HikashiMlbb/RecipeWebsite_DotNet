@@ -1,11 +1,9 @@
 using Domain.RecipeEntity;
-using Domain.UserEntity;
 
 namespace Application.Recipes.Update;
 
 public record RecipeUpdateConfig(
     RecipeId RecipeId,
-    UserId UserId,
     RecipeTitle? Title = null,
     RecipeDescription? Description = null,
     RecipeInstruction? Instruction = null,

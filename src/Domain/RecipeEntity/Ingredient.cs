@@ -1,14 +1,17 @@
+using System.Runtime.CompilerServices;
 using SharedKernel;
+
+[assembly: InternalsVisibleTo("Persistence.Tests")]
 
 namespace Domain.RecipeEntity;
 
 public sealed record Ingredient
 {
-    private Ingredient(string name, decimal count, int unitType)
+    internal Ingredient(string name, decimal count, IngredientType unitType)
     {
         Name = name;
         Count = count;
-        UnitType = (IngredientType)unitType;
+        UnitType = unitType;
     }
 
     public string Name { get; init; } = null!;
@@ -23,6 +26,11 @@ public sealed record Ingredient
 
         if (!Enum.IsDefined((IngredientType)unitType)) return RecipeDomainErrors.IngredientMeasurementUnitIsNotDefined;
 
-        return new Ingredient(name, count, unitType);
+        return new Ingredient(name, count, (IngredientType)unitType);
+    }
+    
+    public static Result<Ingredient> Create(string name, decimal count, IngredientType unitType)
+    {
+        return Create(name, count, (int)unitType);
     }
 }

@@ -63,6 +63,28 @@ public class RecipeRateTests
     }
 
     [Fact]
+    public async Task UserIsAuthor_ReturnsError()
+    {
+        // Arrange
+        var userId = new UserId(15);
+        var obj = new Recipe
+        {
+            AuthorId = userId
+        };
+        var dto = new RecipeRateDto(userId.Value, 5678, 5);
+        _repoMock.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(obj);
+
+        // Act
+        var result1 = await _useCase.Rate(dto);
+
+        // Assert
+        Assert.False(result1.IsSuccess);
+        Assert.Equal(RecipeErrors.UserIsAuthor, result1.Error);
+        _repoMock.Verify(x => x.SearchByIdAsync(It.IsAny<RecipeId>()), Times.Once);
+        _repoMock.Verify(x => x.RateAsync(It.IsAny<RecipeId>(), It.IsAny<UserId>(), It.IsAny<Stars>()), Times.Never);
+    }
+
+    [Fact]
     public async Task RateSuccessfully_ReturnsSuccess()
     {
         // Arrange

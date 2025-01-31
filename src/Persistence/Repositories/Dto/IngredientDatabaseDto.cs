@@ -1,8 +1,8 @@
 namespace Persistence.Repositories.Dto;
 
-public class IngredientDatabaseDto
+public record IngredientDatabaseDto
 {
-    public int RecipeId { get; set; }
+    public long IngredientId { get; set; }
     public string Name { get; set; } = null!;
     public decimal Count { get; set; }
     public string UnitType { get; set; } = null!;

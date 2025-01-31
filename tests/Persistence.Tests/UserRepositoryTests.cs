@@ -5,6 +5,7 @@ using Domain.UserEntity;
 using Infrastructure.Services;
 using Persistence.Repositories;
 using Testcontainers.PostgreSql;
+
 // ReSharper disable InconsistentNaming
 
 namespace Persistence.Tests;
@@ -22,6 +23,19 @@ public class UserRepositoryTests : IAsyncLifetime
         _container = builder.Build();
     }
 
+    public async Task InitializeAsync()
+    {
+        await _container.StartAsync();
+
+        DapperDatabase.Initialize(new DapperConnectionFactory(_container.GetConnectionString()));
+    }
+
+    public async Task DisposeAsync()
+    {
+        await _container.StopAsync();
+        await _container.DisposeAsync();
+    }
+
     [Fact]
     public async Task InsertingUniqueUser_ReturnsUserId()
     {
@@ -30,7 +44,8 @@ public class UserRepositoryTests : IAsyncLifetime
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
         var passwordService = new PasswordService();
-        var user = new User(Username.Create("JustAUsername").Value!, await passwordService.CreateAsync("SomeSomePassword!"));
+        var user = new User(Username.Create("JustAUsername").Value!,
+            await passwordService.CreateAsync("SomeSomePassword!"));
 
         // Act
         var result = await _repository.InsertAsync(user);
@@ -40,7 +55,7 @@ public class UserRepositoryTests : IAsyncLifetime
         Assert.True(custom == 1);
         Assert.True(result.Value != 0);
     }
-    
+
     [Fact]
     public async Task InsertingNotUniqueUser_ReturnsNone()
     {
@@ -49,7 +64,8 @@ public class UserRepositoryTests : IAsyncLifetime
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
         var passwordService = new PasswordService();
-        var user = new User(Username.Create("JustAUsername").Value!, await passwordService.CreateAsync("SomeSomePassword!"));
+        var user = new User(Username.Create("JustAUsername").Value!,
+            await passwordService.CreateAsync("SomeSomePassword!"));
 
         // Act
         var resultSuccess = await _repository.InsertAsync(user);
@@ -75,7 +91,7 @@ public class UserRepositoryTests : IAsyncLifetime
         // Assert
         Assert.Null(result);
     }
-    
+
     [Fact]
     public async Task SearchByUsername_Found_ReturnsUser()
     {
@@ -83,14 +99,14 @@ public class UserRepositoryTests : IAsyncLifetime
         var id = new UserId(5);
         var username = Username.Create("Vovan").Value!;
         var password = new Password("$omeHa$hedPa$$word");
-        var user = new User { Id = id, Username = username, Password = password }; 
+        var user = new User { Id = id, Username = username, Password = password };
         _repository = new UserRepository(new DapperConnectionFactory(_container.GetConnectionString()));
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
         await db.ExecuteAsync("INSERT INTO Users VALUES (5, @username, @password, 'classic')", new
         {
-            @username = username.Value,
-            @password = password.PasswordHash
+            username = username.Value,
+            password = password.PasswordHash
         });
 
         // Act
@@ -108,7 +124,7 @@ public class UserRepositoryTests : IAsyncLifetime
         // Arrange
         var userId = new UserId(15);
         _repository = new UserRepository(new DapperConnectionFactory(_container.GetConnectionString()));
-        
+
         // Act
         var result = await _repository.SearchByIdAsync(userId);
 
@@ -127,14 +143,15 @@ public class UserRepositoryTests : IAsyncLifetime
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
 
-        await db.ExecuteAsync("INSERT INTO Users (Id, Username, Password, Role) VALUES (@Id, @Username, @Password, @Role);", new
-        {
-            @Id = userId.Value,
-            @Username = username.Value!,
-            @Password = password.PasswordHash,
-            @Role = UserRole.Classic.ToString()
-        });
-        
+        await db.ExecuteAsync(
+            "INSERT INTO Users (Id, Username, Password, Role) VALUES (@Id, @Username, @Password, @Role);", new
+            {
+                Id = userId.Value,
+                Username = username.Value!,
+                Password = password.PasswordHash,
+                Role = UserRole.Classic.ToString()
+            });
+
         // Act
         var result = await _repository.SearchByIdAsync(userId);
 
@@ -145,12 +162,12 @@ public class UserRepositoryTests : IAsyncLifetime
         Assert.Equal(password, result.Password);
         Assert.Equal(UserRole.Classic, result.Role);
     }
-    
+
     [Fact]
     public async Task SearchByIdAsync_FoundWithRecipes_ReturnsUser()
     {
         #region Arrange
-        
+
         var userId = new UserId(15);
         var username = Username.Create("Vovan").Value!;
         var password = new Password("$omeHa$hedPa$$word");
@@ -164,28 +181,32 @@ public class UserRepositoryTests : IAsyncLifetime
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
 
-        await db.ExecuteAsync("INSERT INTO Users (Id, Username, Password, Role) VALUES (@Id, @Username, @Password, @Role);", new
-        {
-            @Id = userId.Value,
-            @Username = username.Value!,
-            @Password = password.PasswordHash,
-            @Role = UserRole.Classic.ToString()
-        });
+        await db.ExecuteAsync(
+            "INSERT INTO Users (Id, Username, Password, Role) VALUES (@Id, @Username, @Password, @Role);", new
+            {
+                Id = userId.Value,
+                Username = username.Value!,
+                Password = password.PasswordHash,
+                Role = UserRole.Classic.ToString()
+            });
 
-        await db.ExecuteAsync("INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, @Description, @Instruction, @ImageName, @Difficulty, @PublishedAt, @CookingTime, @Rating, @Votes);", new
-        {
-            @Id = recipeId.Value,
-            @AuthorId = userId.Value,
-            @Title = title!.Value,
-            @Description = new string('b', 500),
-            @Instruction = new string('b', 500),
-            @ImageName = imageName.Value,
-            @Difficulty = difficulty.ToString(),
-            @PublishedAt = DateTimeOffset.UtcNow,
-            @CookingTime = cookingTime,
-            @Rating = rating.Value,
-            @Votes = rating.TotalVotes
-        });
+        await db.ExecuteAsync(
+            "INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, @Description, @Instruction, @ImageName, @Difficulty, @PublishedAt, @CookingTime, @Rating, @Votes);",
+            new
+            {
+                Id = recipeId.Value,
+                AuthorId = userId.Value,
+                Title = title!.Value,
+                Description = new string('b', 500),
+                Instruction = new string('b', 500),
+                ImageName = imageName.Value,
+                Difficulty = difficulty.ToString(),
+                PublishedAt = DateTimeOffset.UtcNow,
+                CookingTime = cookingTime,
+                Rating = rating.Value,
+                Votes = rating.TotalVotes
+            });
+
         #endregion
 
         #region Act
@@ -217,10 +238,11 @@ public class UserRepositoryTests : IAsyncLifetime
         _repository = new UserRepository(new DapperConnectionFactory(_container.GetConnectionString()));
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
-        await db.ExecuteAsync("INSERT INTO Users VALUES (@UserId, 'Vasyan', '$omeHa$hedPa$$w0rd', 'classic');", new { @UserId = userId.Value });
-        
+        await db.ExecuteAsync("INSERT INTO Users VALUES (@UserId, 'Vasyan', '$omeHa$hedPa$$w0rd', 'classic');",
+            new { UserId = userId.Value });
+
         #endregion
-        
+
         #region Act
 
         await _repository.UpdatePasswordAsync(new UserId(6), new Password("$0m3_=+=_@n0th3r_=+=_h@$hed_=+=_p@$$w0rd"));
@@ -233,18 +255,5 @@ public class UserRepositoryTests : IAsyncLifetime
         Assert.Equal(newPassword, result);
 
         #endregion
-    }
-    
-    public async Task InitializeAsync()
-    {
-        await _container.StartAsync();
-        
-        DapperDatabase.Initialize(new DapperConnectionFactory(_container.GetConnectionString()));
-    }
-
-    public async Task DisposeAsync()
-    {
-        await _container.StopAsync();
-        await _container.DisposeAsync();
     }
 }

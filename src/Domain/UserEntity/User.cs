@@ -10,7 +10,6 @@ public sealed class User
     public User()
 #pragma warning restore CS8618, CS9264
     {
-        
     }
 
     public User(

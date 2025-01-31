@@ -1,6 +1,6 @@
 using Dapper;
-using DotNet.Testcontainers.Builders;
 using Testcontainers.PostgreSql;
+
 // ReSharper disable InconsistentNaming
 
 namespace Persistence.Tests;
@@ -17,13 +17,26 @@ public class DatabaseTests : IAsyncLifetime
         _container = builder.Build();
     }
 
+    public async Task InitializeAsync()
+    {
+        await _container.StartAsync();
+
+        DapperDatabase.Initialize(new DapperConnectionFactory(_container.GetConnectionString()));
+    }
+
+    public async Task DisposeAsync()
+    {
+        await _container.StopAsync();
+        await _container.DisposeAsync();
+    }
+
     [Fact]
     public async Task PostgresVersion_ReturnsVersion()
     {
         // Arrange
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
-        
+
         // Act
         var result = await db.QueryFirstAsync<string>("SELECT VERSION();");
 
@@ -44,18 +57,5 @@ public class DatabaseTests : IAsyncLifetime
 
         // Assert
         Assert.Equal(5, result.Count());
-    }
-
-    public async Task InitializeAsync()
-    {
-        await _container.StartAsync();
-        
-        DapperDatabase.Initialize(new DapperConnectionFactory(_container.GetConnectionString()));
-    }
-
-    public async Task DisposeAsync()
-    {
-        await _container.StopAsync();
-        await _container.DisposeAsync();
     }
 }
