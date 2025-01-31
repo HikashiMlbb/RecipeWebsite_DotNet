@@ -38,7 +38,7 @@ public class RecipeGetByPageTest
     public async Task DefaultValues_WhenSortTypeIsInvalid()
     {
         // Arrange
-        var dto = new RecipeGetByPageDto(0, 0, 100);
+        var dto = new RecipeGetByPageDto(0, 0, "invalid");
         var expectedRecipes = new Recipe[] { new(), new(), new() };
         _mock.Setup(x => x.SearchByPageAsync(1, 10, 0)).ReturnsAsync(expectedRecipes);
 

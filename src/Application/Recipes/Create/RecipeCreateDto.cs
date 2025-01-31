@@ -6,6 +6,6 @@ public record RecipeCreateDto(
     string Description,
     string Instruction,
     string ImageName,
-    int Difficulty,
+    string Difficulty,
     string CookingTime,
     List<IngredientDto> Ingredients);
