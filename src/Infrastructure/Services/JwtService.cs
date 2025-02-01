@@ -27,6 +27,7 @@ public class JwtService : IJwtService
             {
                 Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow + (_config.Expires ?? TimeSpan.FromHours(1)),
+                Audience = _config.Audience,
                 Issuer = _config.Issuer,
                 SigningCredentials = key
             };
