@@ -1,8 +1,14 @@
 using API.Endpoints;
 using API.Options;
+using Application.Users.Services;
+using Application.Users.UseCases;
+using Application.Users.UseCases.Login;
 using dotenv.net;
+using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Persistence;
+using Persistence.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +40,37 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 
+#region Registration of Application Layer
+
+builder.Services.AddScoped<UserLogin>();
+
+#endregion
+
+#region Registration of Infrastructure Layer
+
+var jwtDescriptorConfig = new JwtDescriptorConfig
+{
+    Issuer = jwtSettings.Issuer,
+    Expires = jwtSettings.Expires,
+    Audience = jwtSettings.Audience,
+    SigningKey = jwtSettings.Key
+};
+
+builder.Services.AddScoped(typeof(JwtDescriptorConfig), _ => jwtDescriptorConfig);
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
+
+#endregion
+
+#region Registration of Persistence Layer
+
+var connectionString = builder.Configuration.GetValue<string>("DATABASE_CONNECTION") ?? throw new ApplicationException("Database connection string has not been provided.");
+
+builder.Services.AddScoped(typeof(DapperConnectionFactory), _ => new DapperConnectionFactory(connectionString));
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+#endregion
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -44,5 +81,11 @@ if (app.Environment.IsDevelopment())
 
 app.MapUserEndpoints("/api/users");
 app.MapRecipeEndpoints("/api/recipes");
+
+using (var scope = app.Services.CreateScope())
+{
+    var factory = scope.ServiceProvider.GetRequiredService<DapperConnectionFactory>();
+    DapperDatabase.Initialize(factory);
+}
 
 app.Run();
