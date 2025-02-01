@@ -1,4 +1,5 @@
 using Application.Users.UseCases;
+using Application.Users.UseCases.GetById;
 using Application.Users.UseCases.Login;
 using Application.Users.UseCases.Register;
 using Domain.UserEntity;
@@ -15,7 +16,7 @@ public static class UserEndpoints
         route.MapPost("/login", Login);
         route.MapPost("/signup", SignUp);
         route.MapPut("/", () => "Change username and password.");
-        route.MapGet("/{id:int}", () => "Get by ID.");
+        route.MapGet("/{id:int}", Get);
     }
 
     #region Private Implementation of Endpoints
@@ -38,6 +39,29 @@ public static class UserEndpoints
         if (signUpResult.Error == UserDomainErrors.UsernameUnallowedSymbols || signUpResult.Error == UserDomainErrors.UsernameLengthOutOfRange) return Results.BadRequest(signUpResult.Error);
 
         return Results.StatusCode(500);
+    }
+
+    private static async Task<IResult> Get(int id, [FromServices]UserGetById userGet)
+    {
+        var result = await userGet.GetUserAsync(id);
+
+        return result is null
+            ? Results.NotFound()
+            : Results.Ok(new
+            {
+                Id = result.Id.Value,
+                Username = result.Username.Value,
+                Recipes = result.Recipes.Select(x => new
+                {
+                    Id = x.Id.Value,
+                    Title = x.Title.Value,
+                    ImageName = x.ImageName.Value,
+                    Difficulty = x.Difficulty.ToString(),
+                    CookingTime = x.CookingTime.ToString(),
+                    Rating = x.Rate.Value,
+                    Votes = x.Rate.TotalVotes
+                })
+            });
     }
         
     #endregion

@@ -2,6 +2,7 @@ using API.Endpoints;
 using API.Options;
 using Application.Users.Services;
 using Application.Users.UseCases;
+using Application.Users.UseCases.GetById;
 using Application.Users.UseCases.Login;
 using Application.Users.UseCases.Register;
 using dotenv.net;
@@ -45,6 +46,7 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddScoped<UserLogin>();
 builder.Services.AddScoped<UserRegister>();
+builder.Services.AddScoped<UserGetById>();
 
 #endregion
 
