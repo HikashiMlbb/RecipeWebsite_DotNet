@@ -91,7 +91,7 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
 
                 // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
                 if (recipeDto is not null) user.Recipes.Add(recipeDto);
-                return userDto;
+                return user;
             }, new
             {
                 Id = userId.Value
@@ -100,7 +100,7 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
 
         if (result.Count == 0) return null;
 
-        var userDto = result.Single();
+        var userDto = result.Distinct().Single();
 
         var recipes = userDto.Recipes.Count == 0
             ? Array.Empty<Recipe>()
