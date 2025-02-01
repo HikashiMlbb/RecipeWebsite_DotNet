@@ -3,6 +3,7 @@ using API.Options;
 using Application.Users.Services;
 using Application.Users.UseCases;
 using Application.Users.UseCases.Login;
+using Application.Users.UseCases.Register;
 using dotenv.net;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -43,6 +44,7 @@ builder.Services.AddAuthorization();
 #region Registration of Application Layer
 
 builder.Services.AddScoped<UserLogin>();
+builder.Services.AddScoped<UserRegister>();
 
 #endregion
 
