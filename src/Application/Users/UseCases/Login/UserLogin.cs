@@ -25,7 +25,7 @@ public class UserLogin
 
         var foundUser = await _userRepository.SearchByUsernameAsync(usernameResult.Value!);
 
-        if (foundUser is null) return UserErrors.UserNotFound;
+        if (foundUser is null) return UserErrors.UsernameNotFound;
 
         var areEqual = await _passwordService.VerifyAsync(dto.Password, foundUser.Password);
 

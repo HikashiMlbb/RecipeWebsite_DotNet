@@ -5,6 +5,7 @@ using Application.Users.UseCases;
 using Application.Users.UseCases.GetById;
 using Application.Users.UseCases.Login;
 using Application.Users.UseCases.Register;
+using Application.Users.UseCases.Update;
 using dotenv.net;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,11 +22,14 @@ if (builder.Environment.IsDevelopment())
 
 builder.Configuration.AddEnvironmentVariables();
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+#region Authentication & Authorization
+
 var jwtSettings = new JwtSettings();
 builder.Configuration.GetSection(JwtSettings.Section).Bind(jwtSettings);
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -42,11 +46,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 
+#endregion
+
 #region Registration of Application Layer
 
 builder.Services.AddScoped<UserLogin>();
 builder.Services.AddScoped<UserRegister>();
 builder.Services.AddScoped<UserGetById>();
+builder.Services.AddScoped<UserUpdate>();
 
 #endregion
 

@@ -2,6 +2,7 @@ using Application.Users.UseCases;
 using Application.Users.UseCases.GetById;
 using Application.Users.UseCases.Login;
 using Application.Users.UseCases.Register;
+using Application.Users.UseCases.Update;
 using Domain.UserEntity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,7 +16,7 @@ public static class UserEndpoints
 
         route.MapPost("/login", Login);
         route.MapPost("/signup", SignUp);
-        route.MapPut("/", () => "Change username and password.");
+        route.MapPut("/", Update);
         route.MapGet("/{id:int}", Get);
     }
 
@@ -62,6 +63,18 @@ public static class UserEndpoints
                     Votes = x.Rate.TotalVotes
                 })
             });
+    }
+
+    private static async Task<IResult> Update([FromBody]UserUpdateDto dto, [FromServices]UserUpdate userUpdate)
+    {
+        var result = await userUpdate.UpdateAsync(dto);
+
+        if (result.IsSuccess) return Results.Ok();
+        
+        if (result.Error == UserErrors.UserNotFound) return Results.NotFound();
+        if (result.Error == UserErrors.PasswordIsIncorrect) return Results.BadRequest(result.Error);
+        
+        return Results.StatusCode(500);
     }
         
     #endregion
