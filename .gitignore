@@ -3,6 +3,7 @@
 
 .env
 RecipeWebsiteDotNet.sln.DotSettings.user
+requests/
 
 ### DotnetCore ###
 # .NET Core build folders

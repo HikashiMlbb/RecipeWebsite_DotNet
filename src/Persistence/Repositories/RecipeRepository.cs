@@ -17,8 +17,6 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         await using var db = factory.Create();
         await db.OpenAsync();
 
-        int recipeId;
-
         await using var transaction = await db.BeginTransactionAsync();
 
         const string recipeSql = """
@@ -31,39 +29,31 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
                                      INSERT INTO Ingredients (Recipe_Id, Name, Count, Unit)
                                      VALUES (@RecipeId, @Name, @Count, @Unit);
                                      """;
-
-        try
+        
+        var recipeId = await transaction.QueryFirstAsync<int>(recipeSql, new
         {
-            recipeId = await transaction.QueryFirstAsync<int>(recipeSql, new
+            UserId = newRecipe.AuthorId.Value,
+            Title = newRecipe.Title.Value,
+            Description = newRecipe.Description.Value,
+            Instruction = newRecipe.Instruction.Value,
+            ImageName = newRecipe.ImageName.Value,
+            Difficulty = newRecipe.Difficulty.ToString(),
+            PublishedAt = newRecipe.PublishedAt.ToUniversalTime(),
+            CookingTime = newRecipe.CookingTime,
+            Rating = 0,
+            Votes = 0
+        });
+
+        foreach (var ingredient in newRecipe.Ingredients)
+            await transaction.ExecuteAsync(ingredientSql, new
             {
-                UserId = newRecipe.AuthorId.Value,
-                Title = newRecipe.Title.Value,
-                Description = newRecipe.Description.Value,
-                Instruction = newRecipe.Instruction.Value,
-                ImageName = newRecipe.ImageName.Value,
-                Difficulty = newRecipe.Difficulty.ToString(),
-                PublishedAt = newRecipe.PublishedAt.ToUniversalTime(),
-                newRecipe.CookingTime,
-                Rating = 0,
-                Votes = 0
+                RecipeId = recipeId,
+                ingredient.Name,
+                ingredient.Count,
+                Unit = ingredient.UnitType.ToString()
             });
 
-            foreach (var ingredient in newRecipe.Ingredients)
-                await transaction.ExecuteAsync(ingredientSql, new
-                {
-                    RecipeId = recipeId,
-                    ingredient.Name,
-                    ingredient.Count,
-                    Unit = ingredient.UnitType.ToString()
-                });
-
-            await transaction.CommitAsync();
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+        await transaction.CommitAsync();
 
         return new RecipeId(recipeId);
     }

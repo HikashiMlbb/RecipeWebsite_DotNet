@@ -18,6 +18,7 @@ public sealed record Ingredient
     public static Result<Ingredient> Create(string? name, decimal count, int unitType)
     {
         if (name is null || name.Length is < 3 or > 50) return RecipeDomainErrors.IngredientNameLengthOutOfRange;
+        if (name.Any(x => x < ' ')) return RecipeDomainErrors.IngredientNameContainsUnallowedSymbol;
 
         if (count is <= 0 or >= 1_000_000) return RecipeDomainErrors.IngredientCountOutOfRange;
 
