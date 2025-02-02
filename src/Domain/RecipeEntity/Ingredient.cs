@@ -1,7 +1,4 @@
-using System.Runtime.CompilerServices;
 using SharedKernel;
-
-[assembly: InternalsVisibleTo("Persistence.Tests")]
 
 namespace Domain.RecipeEntity;
 
@@ -18,9 +15,9 @@ public sealed record Ingredient
     public decimal Count { get; init; }
     public IngredientType UnitType { get; init; }
 
-    public static Result<Ingredient> Create(string name, decimal count, int unitType)
+    public static Result<Ingredient> Create(string? name, decimal count, int unitType)
     {
-        if (name.Length is < 3 or > 50) return RecipeDomainErrors.IngredientNameLengthOutOfRange;
+        if (name is null || name.Length is < 3 or > 50) return RecipeDomainErrors.IngredientNameLengthOutOfRange;
 
         if (count is <= 0 or >= 1_000_000) return RecipeDomainErrors.IngredientCountOutOfRange;
 

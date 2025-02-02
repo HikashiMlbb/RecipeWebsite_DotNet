@@ -34,7 +34,7 @@ public class RecipeCreateTests
 
         // Assert
         Assert.False(result.IsSuccess);
-        Assert.Equal(UserErrors.UserNotFound, result.Error);
+        Assert.Equal(UserErrors.UserIdNotFound, result.Error);
         _userRepoMock.Verify(x => x.SearchByIdAsync(It.IsAny<UserId>()), Times.Once);
         _recipeRepoMock.Verify(x => x.InsertAsync(It.IsAny<Recipe>()), Times.Never);
     }
@@ -61,17 +61,14 @@ public class RecipeCreateTests
     public async Task DescriptionIsInvalid_ReturnsError()
     {
         // Arrange
-        var userMock = new User(Username.Create("SomeUsername").Value!, new Password("SomePasswordHashed"));
         var dto = new RecipeCreateDto(1, "SomeValidTitle", "", "", "", "hard", "", []);
-        _userRepoMock.Setup(x => x.SearchByIdAsync(It.IsAny<UserId>())).ReturnsAsync(userMock);
-
+        
         // Act
         var result = await _useCase.CreateAsync(dto);
 
         // Assert
         Assert.False(result.IsSuccess);
         Assert.Equal(RecipeDomainErrors.DescriptionLengthOutOfRange, result.Error);
-        _userRepoMock.Verify(x => x.SearchByIdAsync(It.IsAny<UserId>()), Times.Once);
         _recipeRepoMock.Verify(x => x.InsertAsync(It.IsAny<Recipe>()), Times.Never);
     }
 

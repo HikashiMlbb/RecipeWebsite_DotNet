@@ -29,7 +29,9 @@ public sealed class Recipe
         Comments = comments ?? [];
     }
 
-    public Recipe()
+#pragma warning disable CS8618, CS9264
+    internal Recipe()
+#pragma warning restore CS8618, CS9264
     {
     }
 

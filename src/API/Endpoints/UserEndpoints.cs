@@ -1,9 +1,11 @@
+using System.Security.Claims;
 using Application.Users.UseCases;
 using Application.Users.UseCases.GetById;
 using Application.Users.UseCases.Login;
 using Application.Users.UseCases.Register;
 using Application.Users.UseCases.Update;
 using Domain.UserEntity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Endpoints;
@@ -24,6 +26,7 @@ public static class UserEndpoints
 
     private static async Task<IResult> Login([FromBody]UserDto dto, [FromServices]UserLogin userLogin)
     {
+        
         var loginResult = await userLogin.LoginAsync(dto);
 
         return loginResult.IsSuccess
@@ -42,6 +45,26 @@ public static class UserEndpoints
         return Results.StatusCode(500);
     }
 
+    [Authorize]
+    private static async Task<IResult> Update(
+        [FromBody]UserUpdateDto dto, 
+        [FromServices]UserUpdate userUpdate,
+        HttpContext context)
+    {
+        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+
+        var userDto = dto with { Id = int.Parse(userId) };
+        
+        var result = await userUpdate.UpdateAsync(userDto);
+
+        if (result.IsSuccess) return Results.Ok();
+        
+        if (result.Error == UserErrors.UserIdNotFound) return Results.NotFound();
+        if (result.Error == UserErrors.PasswordIsIncorrect) return Results.Problem(statusCode: 401, title: result.Error.Code, detail: result.Error.Description);
+        
+        return Results.StatusCode(500);
+    }
+    
     private static async Task<IResult> Get(int id, [FromServices]UserGetById userGet)
     {
         var result = await userGet.GetUserAsync(id);
@@ -63,18 +86,6 @@ public static class UserEndpoints
                     Votes = x.Rate.TotalVotes
                 })
             });
-    }
-
-    private static async Task<IResult> Update([FromBody]UserUpdateDto dto, [FromServices]UserUpdate userUpdate)
-    {
-        var result = await userUpdate.UpdateAsync(dto);
-
-        if (result.IsSuccess) return Results.Ok();
-        
-        if (result.Error == UserErrors.UserNotFound) return Results.NotFound();
-        if (result.Error == UserErrors.PasswordIsIncorrect) return Results.BadRequest(result.Error);
-        
-        return Results.StatusCode(500);
     }
         
     #endregion

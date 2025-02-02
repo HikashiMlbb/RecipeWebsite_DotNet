@@ -1,9 +1,5 @@
-using System.Runtime.CompilerServices;
 using Domain.UserEntity;
 using SharedKernel;
-
-[assembly: InternalsVisibleTo("Application.Tests")]
-[assembly: InternalsVisibleTo("Persistence.Tests")]
 
 namespace Domain.RecipeEntity;
 
@@ -27,6 +23,7 @@ public sealed record Comment
 
     public static Result<Comment> Create(User author, string content, DateTimeOffset publishedAt)
     {
+        content = content.ReplaceLineEndings(" ");
         if (string.IsNullOrWhiteSpace(content) || content.Length > 1500)
             return RecipeDomainErrors.CommentLengthOutOfRange;
 

@@ -20,7 +20,7 @@ public class UserUpdate
         var userId = new UserId(dto.Id);
         var user = await _repo.SearchByIdAsync(userId);
 
-        if (user is null) return UserErrors.UserNotFound;
+        if (user is null) return UserErrors.UserIdNotFound;
 
         var verifyResult = await _passwordService.VerifyAsync(dto.OldPassword, user.Password);
 
