@@ -40,7 +40,9 @@ public static class UserEndpoints
 
         if (signUpResult.IsSuccess) return Results.Ok(signUpResult.Value);
         if (signUpResult.Error == UserErrors.UserAlreadyExists) return Results.Conflict(signUpResult.Error);
-        if (signUpResult.Error == UserDomainErrors.UsernameUnallowedSymbols || signUpResult.Error == UserDomainErrors.UsernameLengthOutOfRange) return Results.BadRequest(signUpResult.Error);
+        if (signUpResult.Error == UserDomainErrors.UsernameUnallowedSymbols 
+            || signUpResult.Error == UserDomainErrors.UsernameLengthOutOfRange
+            || signUpResult.Error == UserErrors.PasswordIsIncorrect) return Results.BadRequest(signUpResult.Error);
 
         return Results.StatusCode(500);
     }

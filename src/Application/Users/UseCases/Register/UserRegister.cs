@@ -20,14 +20,13 @@ public class UserRegister
     public async Task<Result<string>> RegisterAsync(UserDto dto)
     {
         var usernameCreateResult = Username.Create(dto.Username);
-
         if (usernameCreateResult.Value is not { } username) return usernameCreateResult.Error!;
 
         var foundUser = await _userRepository.SearchByUsernameAsync(username);
-
         if (foundUser is not null) return UserErrors.UserAlreadyExists;
 
-        var password = await _passwordService.CreateAsync(dto.Password);
+        if (dto.Password is not { } userPassword) return UserErrors.PasswordIsIncorrect;
+        var password = await _passwordService.CreateAsync(userPassword);
         var newUser = new User(username, password);
         var result = await _userRepository.InsertAsync(newUser);
 

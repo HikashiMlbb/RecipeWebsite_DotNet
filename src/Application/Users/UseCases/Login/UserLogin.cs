@@ -20,14 +20,13 @@ public class UserLogin
     public async Task<Result<string>> LoginAsync(UserDto dto)
     {
         var usernameResult = Username.Create(dto.Username);
-
         if (!usernameResult.IsSuccess) return usernameResult.Error!;
 
         var foundUser = await _userRepository.SearchByUsernameAsync(usernameResult.Value!);
-
         if (foundUser is null) return UserErrors.UsernameNotFound;
 
-        var areEqual = await _passwordService.VerifyAsync(dto.Password, foundUser.Password);
+        if (dto.Password is not { } userPassword) return UserErrors.PasswordIsIncorrect;
+        var areEqual = await _passwordService.VerifyAsync(userPassword, foundUser.Password);
 
         if (!areEqual) return UserErrors.PasswordIsIncorrect;
 
