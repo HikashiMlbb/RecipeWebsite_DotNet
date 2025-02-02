@@ -1,7 +1,4 @@
-using System.Runtime.CompilerServices;
 using SharedKernel;
-
-[assembly: InternalsVisibleTo("Persistence")]
 
 namespace Domain.RecipeEntity;
 
@@ -14,9 +11,9 @@ public sealed record RecipeTitle
 
     public string Value { get; init; }
 
-    public static Result<RecipeTitle> Create(string value)
+    public static Result<RecipeTitle> Create(string? value)
     {
-        if (value.Length is < 3 or > 50) return RecipeDomainErrors.TitleLengthOutOfRange;
+        if (value is null || value.Length is < 3 or > 50) return RecipeDomainErrors.TitleLengthOutOfRange;
 
         return new RecipeTitle(value);
     }

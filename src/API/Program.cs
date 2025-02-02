@@ -1,5 +1,7 @@
 using API.Endpoints;
 using API.Options;
+using Application.Recipes;
+using Application.Recipes.Create;
 using Application.Users.Services;
 using Application.Users.UseCases;
 using Application.Users.UseCases.GetById;
@@ -55,6 +57,8 @@ builder.Services.AddScoped<UserRegister>();
 builder.Services.AddScoped<UserGetById>();
 builder.Services.AddScoped<UserUpdate>();
 
+builder.Services.AddScoped<RecipeCreate>();
+
 #endregion
 
 #region Registration of Infrastructure Layer
@@ -79,6 +83,7 @@ var connectionString = builder.Configuration.GetValue<string>("DATABASE_CONNECTI
 
 builder.Services.AddScoped(typeof(DapperConnectionFactory), _ => new DapperConnectionFactory(connectionString));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
 
 #endregion
 

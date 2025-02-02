@@ -15,8 +15,7 @@ public sealed class User
     public User(
         Username username,
         Password password,
-        UserRole role = UserRole.Classic,
-        ICollection<Recipe>? recipes = null)
+        UserRole role = UserRole.Classic)
     {
         Username = username;
         Password = password;
