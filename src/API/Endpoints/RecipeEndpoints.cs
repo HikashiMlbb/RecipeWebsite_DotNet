@@ -5,6 +5,7 @@ using Application.Recipes.Comment;
 using Application.Recipes.Create;
 using Application.Recipes.GetById;
 using Application.Recipes.GetByPage;
+using Application.Recipes.GetByQuery;
 using Application.Recipes.Rate;
 using Application.Users.UseCases.GetById;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +25,7 @@ public static class RecipeEndpoints
         route.MapPost("/{recipeId:int}/comment", Comment);
         route.MapGet("/{recipeId:int}", SearchById);
         route.MapGet("/page", SearchByPage);
-        route.MapGet("/search", () => "Get Recipes by Query.");
+        route.MapGet("/search", SearchByQuery);
         route.MapPut("/{id:int}", () => "Change Recipe.");
         route.MapDelete("/{id:int}", () => "Delete Recipe by ID.");
     }
@@ -155,6 +156,24 @@ public static class RecipeEndpoints
     {
         var dto = new RecipeGetByPageDto(page, pageSize, sortType);
         var result = await recipeService.GetRecipesAsync(dto);
+        
+        return Results.Ok(result.Select(x => new
+        {
+            Id = x.Id.Value,
+            Title = x.Title.Value,
+            Image = x.ImageName.Value,
+            Difficulty = x.Difficulty.ToString(),
+            CookingTime = x.CookingTime,
+            Rating = x.Rate.Value,
+            Votes = x.Rate.TotalVotes
+        }));
+    }
+
+    private static async Task<IResult> SearchByQuery(
+        [FromQuery]string query,
+        [FromServices]RecipeGetByQuery recipeService)
+    {
+        var result = await recipeService.GetRecipesAsync(query);
         
         return Results.Ok(result.Select(x => new
         {

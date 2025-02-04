@@ -282,6 +282,7 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
             Title = new RecipeTitle(x.Title),
             ImageName = new RecipeImageName(x.ImageName),
             Difficulty = Enum.Parse<RecipeDifficulty>(x.Difficulty, true),
+            CookingTime = x.CookingTime,
             Rate = new Rate(x.Rating, x.Votes)
         });
     }
