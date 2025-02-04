@@ -7,6 +7,7 @@ using Application.Recipes.GetById;
 using Application.Recipes.GetByPage;
 using Application.Recipes.GetByQuery;
 using Application.Recipes.Rate;
+using Application.Recipes.Update;
 using Application.Users.Services;
 using Application.Users.UseCases;
 using Application.Users.UseCases.GetById;
@@ -58,17 +59,22 @@ builder.Services.AddAuthorization();
 
 #region Registration of Application Layer
 
-builder.Services.AddScoped<UserLogin>();
-builder.Services.AddScoped<UserRegister>();
-builder.Services.AddScoped<UserGetById>();
-builder.Services.AddScoped<UserUpdate>();
+// User UseCases
+builder.Services
+    .AddScoped<UserLogin>()
+    .AddScoped<UserRegister>()
+    .AddScoped<UserGetById>()
+    .AddScoped<UserUpdate>();
 
-builder.Services.AddScoped<RecipeCreate>();
-builder.Services.AddScoped<RecipeRate>();
-builder.Services.AddScoped<RecipeComment>();
-builder.Services.AddScoped<RecipeGetById>();
-builder.Services.AddScoped<RecipeGetByPage>();
-builder.Services.AddScoped<RecipeGetByQuery>();
+// Recipe UseCases
+builder.Services
+    .AddScoped<RecipeCreate>()
+    .AddScoped<RecipeRate>()
+    .AddScoped<RecipeComment>()
+    .AddScoped<RecipeGetById>()
+    .AddScoped<RecipeGetByPage>()
+    .AddScoped<RecipeGetByQuery>()
+    .AddScoped<RecipeUpdate>();
 
 #endregion
 

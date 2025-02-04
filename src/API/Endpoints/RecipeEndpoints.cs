@@ -7,6 +7,7 @@ using Application.Recipes.GetById;
 using Application.Recipes.GetByPage;
 using Application.Recipes.GetByQuery;
 using Application.Recipes.Rate;
+using Application.Recipes.Update;
 using Application.Users.UseCases.GetById;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -26,7 +27,7 @@ public static class RecipeEndpoints
         route.MapGet("/{recipeId:int}", SearchById);
         route.MapGet("/page", SearchByPage);
         route.MapGet("/search", SearchByQuery);
-        route.MapPut("/{id:int}", () => "Change Recipe.");
+        route.MapPut("/{recipeId:int}", Update);
         route.MapDelete("/{id:int}", () => "Delete Recipe by ID.");
     }
 
@@ -185,6 +186,48 @@ public static class RecipeEndpoints
             Rating = x.Rate.Value,
             Votes = x.Rate.TotalVotes
         }));
+    }
+
+    [Authorize]
+    private static async Task<IResult> Update(
+        [FromRoute]int recipeId,
+        [FromForm]RecipeUpdateEndpointDto? dto,
+        [FromForm(Name = "image")]IFormFile? image,
+        [FromServices]RecipeUpdate recipeService,
+        HttpContext context,
+        IHostEnvironment env)
+    {
+        if (dto is null) return Results.Ok();
+        
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        if (image is not null)
+        {
+            if (image.Length == 0 || (!image.FileName.EndsWith(".jpg") && !image.FileName.EndsWith(".png"))) 
+                return Results.BadRequest("File format is not recognized.");
+        }
+        
+        var imageName = image is null ? null : await SaveImage(image, env.ContentRootPath);
+        
+        var updateDto = new RecipeUpdateDto(
+            RecipeId: recipeId,
+            UserId: int.Parse(userId),
+            Title: dto.Title,
+            Description: dto.Description,
+            Instruction: dto.Instruction,
+            ImageName: imageName,
+            Difficulty: dto.Difficulty,
+            CookingTime: dto.CookingTime,
+            Ingredients: dto.Ingredients); 
+        
+        var result = await recipeService.UpdateAsync(updateDto);
+
+        if (result.IsSuccess) return Results.Ok();
+
+        if (result.Error == RecipeErrors.RecipeNotFound) return Results.NotFound();
+        if (result.Error == RecipeErrors.UserIsNotAuthor) return Results.Forbid();
+
+        return Results.Problem(statusCode: 400, title: result.Error!.Code, detail: result.Error!.Description);
     }
     
     #endregion

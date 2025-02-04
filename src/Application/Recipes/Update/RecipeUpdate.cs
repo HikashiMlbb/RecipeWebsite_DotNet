@@ -70,10 +70,8 @@ public class RecipeUpdate
             updateConfig = updateConfig with { CookingTime = cookingTime };
         }
 
-        if (dto.Ingredients is { } rawIngredients)
+        if (dto.Ingredients is { } rawIngredients && rawIngredients.Count != 0)
         {
-            if (rawIngredients.Count == 0) return RecipeErrors.NoIngredientsProvided;
-
             var ingredientMappingResult =
                 dto.Ingredients.Select(x => Ingredient.Create(x.Name, x.Count, x.UnitType)).ToList();
             var failedIngredient = ingredientMappingResult.FirstOrDefault(x => !x.IsSuccess);
