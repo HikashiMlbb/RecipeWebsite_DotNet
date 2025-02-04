@@ -4,6 +4,7 @@ using Application.Recipes;
 using Application.Recipes.Comment;
 using Application.Recipes.Create;
 using Application.Recipes.GetById;
+using Application.Recipes.GetByPage;
 using Application.Recipes.Rate;
 using Application.Users.Services;
 using Application.Users.UseCases;
@@ -65,6 +66,7 @@ builder.Services.AddScoped<RecipeCreate>();
 builder.Services.AddScoped<RecipeRate>();
 builder.Services.AddScoped<RecipeComment>();
 builder.Services.AddScoped<RecipeGetById>();
+builder.Services.AddScoped<RecipeGetByPage>();
 
 #endregion
 
