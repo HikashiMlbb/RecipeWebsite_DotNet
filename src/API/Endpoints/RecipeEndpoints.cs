@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using API.Poco;
 using Application.Recipes;
+using Application.Recipes.Comment;
 using Application.Recipes.Create;
 using Application.Recipes.Rate;
 using Microsoft.AspNetCore.Authorization;
@@ -12,11 +13,11 @@ public static class RecipeEndpoints
 {
     public static void MapRecipeEndpoints(this IEndpointRouteBuilder app, string path)
     {
-        var route = app.MapGroup(path).WithTags("Recipe Endpoints:");
+        var route = app.MapGroup(path).WithTags("Recipe Endpoints:").DisableAntiforgery();
 
-        route.MapPost("/", Create).DisableAntiforgery();
-        route.MapPost("/{recipeId:int}/rate", Rate).DisableAntiforgery();
-        route.MapPost("/{id:int}/comment", () => "Comment the Recipe by ID.");
+        route.MapPost("/", Create);
+        route.MapPost("/{recipeId:int}/rate", Rate);
+        route.MapPost("/{recipeId:int}/comment", Comment);
         route.MapGet("/{id:int}", () => "Search Recipe by ID.");
         route.MapGet("/page", () => "Get Recipes by Pagination.");
         route.MapGet("/search", () => "Get Recipes by Query.");
@@ -77,6 +78,29 @@ public static class RecipeEndpoints
         return Results.Forbid();
     }
 
+    [Authorize]
+    private static async Task<IResult> Comment(
+        [FromRoute]int recipeId,
+        [FromForm]string content,
+        [FromServices]RecipeComment commentService,
+        HttpContext context)
+    {
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        var commentDto = new RecipeCommentDto(
+            UserId: int.Parse(userId),
+            RecipeId: recipeId,
+            Content: content);
+        
+        var result = await commentService.Comment(commentDto);
+
+        if (result.IsSuccess) return Results.Created();
+
+        return result.Error == RecipeErrors.RecipeNotFound 
+            ? Results.NotFound() 
+            : Results.BadRequest(result.Error);
+    }
+    
     #endregion
 
     #region Private endpoint additional functional

@@ -1,6 +1,7 @@
 using API.Endpoints;
 using API.Options;
 using Application.Recipes;
+using Application.Recipes.Comment;
 using Application.Recipes.Create;
 using Application.Recipes.Rate;
 using Application.Users.Services;
@@ -61,6 +62,7 @@ builder.Services.AddScoped<UserUpdate>();
 
 builder.Services.AddScoped<RecipeCreate>();
 builder.Services.AddScoped<RecipeRate>();
+builder.Services.AddScoped<RecipeComment>();
 
 #endregion
 
