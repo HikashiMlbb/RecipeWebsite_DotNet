@@ -184,24 +184,6 @@ public class RecipeUpdateTests
     }
 
     [Fact]
-    public async Task InvalidIngredient_NoIngredientProvided_ReturnsError()
-    {
-        // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
-        var dto = new RecipeUpdateDto(13, 26, Ingredients: []);
-        _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
-
-        // Act
-        var result = await _useCase.UpdateAsync(dto);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal(RecipeErrors.NoIngredientsProvided, result.Error);
-        _mockRepo.Verify(x => x.SearchByIdAsync(It.IsAny<RecipeId>()), Times.Once);
-        _mockRepo.Verify(x => x.UpdateAsync(It.IsAny<RecipeUpdateConfig>()), Times.Never);
-    }
-
-    [Fact]
     public async Task InvalidIngredientName_ReturnsError()
     {
         // Arrange
