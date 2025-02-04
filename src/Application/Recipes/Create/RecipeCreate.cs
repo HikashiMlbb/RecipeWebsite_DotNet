@@ -20,8 +20,6 @@ public class RecipeCreate
     public async Task<Result<RecipeId>> CreateAsync(RecipeCreateDto dto)
     {
         var authorId = new UserId(dto.AuthorId);
-        var foundUser = await _userRepo.SearchByIdAsync(authorId);
-        if (foundUser is null) return UserErrors.UserNotFound;
 
         var recipeTitleResult = RecipeTitle.Create(dto.Title);
         if (!recipeTitleResult.IsSuccess) return recipeTitleResult.Error!;
@@ -40,8 +38,8 @@ public class RecipeCreate
         if (!isParseSuccess) return RecipeErrors.CookingTimeHasInvalidFormat;
 
         if (cookingTime > TimeSpan.FromDays(7)) return RecipeErrors.CookingTimeIsTooHuge;
-
-        if (dto.Ingredients.Count == 0) return RecipeErrors.NoIngredientsProvided;
+        
+        if (dto.Ingredients is null || dto.Ingredients.Count == 0) return RecipeErrors.NoIngredientsProvided;
 
         var ingredientMappingResult =
             dto.Ingredients.Select(x => Ingredient.Create(x.Name, x.Count, x.UnitType)).ToList();
@@ -57,7 +55,10 @@ public class RecipeCreate
             recipeInstructionResult.Value!,
             imageName,
             difficulty,
-            cookingTime, ingredients: ingredients);
+            cookingTime, ingredients: ingredients)
+        {
+            PublishedAt = DateTimeOffset.UtcNow
+        };
 
         var result = await _recipeRepo.InsertAsync(newRecipe);
         return result;

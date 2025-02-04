@@ -2,6 +2,9 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=rider,dotnetcore
 
 .env
+RecipeWebsiteDotNet.sln.DotSettings.user
+requests/
+static/
 
 ### DotnetCore ###
 # .NET Core build folders

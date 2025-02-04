@@ -66,7 +66,8 @@ public class UserUpdateTests
         _passwordServiceMock.Setup(x => x.VerifyAsync(It.IsAny<string>(), It.IsAny<Password>())).ReturnsAsync(true);
         _passwordServiceMock.Setup(x => x.CreateAsync(It.IsAny<string>()))
             .ReturnsAsync(new Password("#$!Hashed_N3w_p@ssw0rd!$#"));
-        _userRepoMock.Setup(x => x.UpdatePasswordAsync(It.IsAny<Password>())).Returns(Task.CompletedTask);
+        _userRepoMock.Setup(x => x.UpdatePasswordAsync(It.IsAny<UserId>(), It.IsAny<Password>()))
+            .Returns(Task.CompletedTask);
 
         // Act
         var result = await _useCase.UpdateAsync(dto);
@@ -76,6 +77,6 @@ public class UserUpdateTests
         _userRepoMock.Verify(x => x.SearchByIdAsync(It.IsAny<UserId>()), Times.Once);
         _passwordServiceMock.Verify(x => x.VerifyAsync(It.IsAny<string>(), It.IsAny<Password>()), Times.Once);
         _passwordServiceMock.Verify(x => x.CreateAsync(It.IsAny<string>()), Times.Once);
-        _userRepoMock.Verify(x => x.UpdatePasswordAsync(It.IsAny<Password>()), Times.Once);
+        _userRepoMock.Verify(x => x.UpdatePasswordAsync(It.IsAny<UserId>(), It.IsAny<Password>()), Times.Once);
     }
 }

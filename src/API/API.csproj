@@ -8,8 +8,16 @@
 
     <ItemGroup>
         <PackageReference Include="dotenv.net" Version="3.2.1"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.12" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Application\Application.csproj" />
+      <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
+      <ProjectReference Include="..\Persistence\Persistence.csproj" />
     </ItemGroup>
 
 </Project>

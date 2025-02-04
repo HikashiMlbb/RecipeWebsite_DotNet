@@ -20,14 +20,14 @@ public class UserUpdate
         var userId = new UserId(dto.Id);
         var user = await _repo.SearchByIdAsync(userId);
 
-        if (user is null) return new Error();
+        if (user is null) return UserErrors.UserIdNotFound;
 
         var verifyResult = await _passwordService.VerifyAsync(dto.OldPassword, user.Password);
 
-        if (!verifyResult) return new Error();
+        if (!verifyResult) return UserErrors.PasswordIsIncorrect;
 
         var newHashedPassword = await _passwordService.CreateAsync(dto.NewPassword);
-        await _repo.UpdatePasswordAsync(newHashedPassword);
+        await _repo.UpdatePasswordAsync(userId, newHashedPassword);
 
         return Result.Success();
     }

@@ -1,10 +1,13 @@
+using System.Text.RegularExpressions;
 using SharedKernel;
 
 namespace Domain.UserEntity;
 
 public sealed record Username
 {
-    private static readonly char[] UnallowedSymbols = @"!@#$%^&*()=+/|\ ".ToCharArray();
+#pragma warning disable SYSLIB1045
+    private static readonly Regex AllowedSymbolsRegex = new(@"^[a-zA-Z][a-zA-Z|_\-0-9]*[a-zA-Z0-9]$");
+#pragma warning restore SYSLIB1045
 
     private Username(string value)
     {
@@ -13,12 +16,10 @@ public sealed record Username
 
     public string Value { get; init; }
 
-    public static Result<Username> Create(string value)
+    public static Result<Username> Create(string? value)
     {
-        if (value.Length is < 4 or > 30) return UserDomainErrors.UsernameLengthOutOfRange;
-
-        if (value.ToCharArray().Any(x => UnallowedSymbols.Contains(x)))
-            return UserDomainErrors.UsernameUnallowedSymbols;
+        if (value is null || value.Length is < 4 or > 30) return UserDomainErrors.UsernameLengthOutOfRange;
+        if (!AllowedSymbolsRegex.Match(value).Success) return UserDomainErrors.UsernameUnallowedSymbols;
 
         return new Username(value);
     }

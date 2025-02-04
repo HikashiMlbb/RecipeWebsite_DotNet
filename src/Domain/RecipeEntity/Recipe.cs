@@ -29,7 +29,9 @@ public sealed class Recipe
         Comments = comments ?? [];
     }
 
-    public Recipe()
+#pragma warning disable CS8618, CS9264
+    internal Recipe()
+#pragma warning restore CS8618, CS9264
     {
     }
 
@@ -40,7 +42,7 @@ public sealed class Recipe
     public RecipeInstruction Instruction { get; set; }
     public RecipeImageName ImageName { get; set; }
     public RecipeDifficulty Difficulty { get; set; }
-    public DateTime PublishedAt { get; set; }
+    public DateTimeOffset PublishedAt { get; set; }
     public TimeSpan CookingTime { get; set; }
 
     public Rate Rate { get; set; }
