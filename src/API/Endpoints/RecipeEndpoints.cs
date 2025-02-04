@@ -3,9 +3,12 @@ using API.Poco;
 using Application.Recipes;
 using Application.Recipes.Comment;
 using Application.Recipes.Create;
+using Application.Recipes.GetById;
 using Application.Recipes.Rate;
+using Application.Users.UseCases.GetById;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+// ReSharper disable RedundantAnonymousTypePropertyName
 
 namespace API.Endpoints;
 
@@ -18,7 +21,7 @@ public static class RecipeEndpoints
         route.MapPost("/", Create);
         route.MapPost("/{recipeId:int}/rate", Rate);
         route.MapPost("/{recipeId:int}/comment", Comment);
-        route.MapGet("/{id:int}", () => "Search Recipe by ID.");
+        route.MapGet("/{recipeId:int}", SearchById);
         route.MapGet("/page", () => "Get Recipes by Pagination.");
         route.MapGet("/search", () => "Get Recipes by Query.");
         route.MapPut("/{id:int}", () => "Change Recipe.");
@@ -99,6 +102,48 @@ public static class RecipeEndpoints
         return result.Error == RecipeErrors.RecipeNotFound 
             ? Results.NotFound() 
             : Results.BadRequest(result.Error);
+    }
+
+    private static async Task<IResult> SearchById(
+        [FromRoute]int recipeId, 
+        [FromServices]RecipeGetById recipeService,
+        [FromServices]UserGetById userService)
+    {
+        var result = await recipeService.GetRecipeAsync(recipeId);
+        if (result is null) return Results.NotFound();
+
+        var author = (await userService.GetUserAsync(result.AuthorId.Value))!;
+
+        return Results.Ok(new
+        {
+            Id = result.Id.Value,
+            Author = new
+            {
+                Id = author.Id.Value,
+                Username = author.Username.Value
+            },
+            Title = result.Title.Value,
+            Description = result.Description.Value,
+            Instruction = result.Instruction.Value,
+            Image = result.ImageName.Value,
+            Difficulty = result.Difficulty.ToString(),
+            PublishedAt = result.PublishedAt,
+            CookingTime = result.CookingTime.ToString(),
+            Rating = result.Rate.Value,
+            Votes = result.Rate.TotalVotes,
+            Ingredients = result.Ingredients.Select(x => new
+            {
+                Name = x.Name,
+                Count = x.Count,
+                MeasurementUnit = x.UnitType.ToString()
+            }),
+            Comments = result.Comments.Select(x => new
+            {
+                UserId = x.Author.Id.Value,
+                Content = x.Content,
+                PublishedAt = x.PublishedAt
+            })
+        });
     }
     
     #endregion
