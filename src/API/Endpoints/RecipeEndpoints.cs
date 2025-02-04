@@ -1,7 +1,8 @@
 using System.Security.Claims;
 using API.Poco;
+using Application.Recipes;
 using Application.Recipes.Create;
-using Application.Users.UseCases;
+using Application.Recipes.Rate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,7 +15,7 @@ public static class RecipeEndpoints
         var route = app.MapGroup(path).WithTags("Recipe Endpoints:");
 
         route.MapPost("/", Create).DisableAntiforgery();
-        route.MapPost("/{id:int}/rate", () => "Rate the Recipe by ID.");
+        route.MapPost("/{recipeId:int}/rate", Rate).DisableAntiforgery();
         route.MapPost("/{id:int}/comment", () => "Comment the Recipe by ID.");
         route.MapGet("/{id:int}", () => "Search Recipe by ID.");
         route.MapGet("/page", () => "Get Recipes by Pagination.");
@@ -33,7 +34,7 @@ public static class RecipeEndpoints
         [FromServices] IHostEnvironment env,
         HttpContext context)
     {
-        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "1";
+        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
         
         if (imageFile.Length == 0 || (!imageFile.FileName.EndsWith(".jpg") && !imageFile.FileName.EndsWith(".png"))) 
             return Results.BadRequest("File format is not recognized.");
@@ -55,6 +56,25 @@ public static class RecipeEndpoints
          return result.IsSuccess 
              ? Results.Ok(result.Value!.Value) 
              : Results.BadRequest(result.Error);
+    }
+
+    [Authorize]
+    private static async Task<IResult> Rate(
+        [FromRoute]int recipeId,
+        [FromForm]int stars,
+        [FromServices]RecipeRate rateService,
+        HttpContext context)
+    {
+        var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+        var rateDto = new RecipeRateDto(int.Parse(userId), recipeId, stars);
+        var result = await rateService.Rate(rateDto);
+
+        if (result.IsSuccess) return Results.Ok((int)result.Value);
+        
+        if (result.Error == RecipeErrors.RecipeNotFound) return Results.NotFound();
+        if (result.Error == RecipeErrors.StarsAreNotDefined) return Results.Problem(statusCode: 400, title: result.Error.Code, detail: result.Error.Description);
+
+        return Results.Forbid();
     }
 
     #endregion
