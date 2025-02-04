@@ -1,3 +1,3 @@
 namespace Application.Recipes;
 
-public record IngredientDto(string Name, decimal Count, string UnitType);
+public record IngredientDto(string? Name, decimal? Count, string? UnitType);

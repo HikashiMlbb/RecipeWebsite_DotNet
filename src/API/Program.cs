@@ -11,6 +11,7 @@ using Application.Users.UseCases.Update;
 using dotenv.net;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Persistence;
 using Persistence.Repositories;
@@ -94,6 +95,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+var staticDirectoryPath = Path.Combine(builder.Environment.ContentRootPath, "static");
+Directory.CreateDirectory(staticDirectoryPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(staticDirectoryPath),
+    RequestPath = "/static"
+});
 
 app.MapUserEndpoints("/api/users");
 app.MapRecipeEndpoints("/api/recipes");

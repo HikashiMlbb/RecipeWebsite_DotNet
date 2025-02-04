@@ -38,8 +38,8 @@ public class RecipeCreate
         if (!isParseSuccess) return RecipeErrors.CookingTimeHasInvalidFormat;
 
         if (cookingTime > TimeSpan.FromDays(7)) return RecipeErrors.CookingTimeIsTooHuge;
-
-        if (dto.Ingredients.Count == 0) return RecipeErrors.NoIngredientsProvided;
+        
+        if (dto.Ingredients is null || dto.Ingredients.Count == 0) return RecipeErrors.NoIngredientsProvided;
 
         var ingredientMappingResult =
             dto.Ingredients.Select(x => Ingredient.Create(x.Name, x.Count, x.UnitType)).ToList();
