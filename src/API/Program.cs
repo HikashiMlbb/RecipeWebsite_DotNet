@@ -3,6 +3,7 @@ using API.Options;
 using Application.Recipes;
 using Application.Recipes.Comment;
 using Application.Recipes.Create;
+using Application.Recipes.Delete;
 using Application.Recipes.GetById;
 using Application.Recipes.GetByPage;
 using Application.Recipes.GetByQuery;
@@ -74,7 +75,8 @@ builder.Services
     .AddScoped<RecipeGetById>()
     .AddScoped<RecipeGetByPage>()
     .AddScoped<RecipeGetByQuery>()
-    .AddScoped<RecipeUpdate>();
+    .AddScoped<RecipeUpdate>()
+    .AddScoped<RecipeDelete>();
 
 #endregion
 

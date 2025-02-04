@@ -3,6 +3,7 @@ using API.Poco;
 using Application.Recipes;
 using Application.Recipes.Comment;
 using Application.Recipes.Create;
+using Application.Recipes.Delete;
 using Application.Recipes.GetById;
 using Application.Recipes.GetByPage;
 using Application.Recipes.GetByQuery;
@@ -28,7 +29,7 @@ public static class RecipeEndpoints
         route.MapGet("/page", SearchByPage);
         route.MapGet("/search", SearchByQuery);
         route.MapPut("/{recipeId:int}", Update);
-        route.MapDelete("/{id:int}", () => "Delete Recipe by ID.");
+        route.MapDelete("/{recipeId:int}", Delete);
     }
 
     #region Private Implementation of Endpoints
@@ -229,7 +230,24 @@ public static class RecipeEndpoints
 
         return Results.Problem(statusCode: 400, title: result.Error!.Code, detail: result.Error!.Description);
     }
-    
+
+    [Authorize]
+    private static async Task<IResult> Delete(
+        [FromRoute]int recipeId,
+        [FromServices]RecipeDelete recipeService,
+        HttpContext context)
+    {
+        var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var result = await recipeService.DeleteAsync(
+            recipeId: recipeId, 
+            userId: int.Parse(userId));
+
+        if (result.IsSuccess) return Results.NoContent();
+
+        return result.Error == RecipeErrors.RecipeNotFound
+            ? Results.NotFound()
+            : Results.Forbid();
+    }
     #endregion
 
     #region Private endpoint additional functional
