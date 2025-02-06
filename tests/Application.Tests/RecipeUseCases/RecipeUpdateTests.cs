@@ -42,7 +42,7 @@ public class RecipeUpdateTests
         // Arrange
         const int recipeId = 69;
         const int userId = 666;
-        var returnedRecipe = new Recipe { AuthorId = new UserId(70) };
+        var returnedRecipe = new Recipe { Author = new User { Id = new UserId(70) } };
         var dto = new RecipeUpdateDto(recipeId, userId);
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>()))
             .ReturnsAsync(returnedRecipe);
@@ -61,7 +61,7 @@ public class RecipeUpdateTests
     public async Task InvalidTitle_ReturnsError()
     {
         // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
+        var recipe = new Recipe { Author = new User { Id = new UserId(26) } };
         var dto = new RecipeUpdateDto(13, 26, "I");
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
@@ -79,7 +79,7 @@ public class RecipeUpdateTests
     public async Task InvalidDescription_ReturnsError()
     {
         // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
+        var recipe = new Recipe { Author = new User { Id = new UserId(26) } };
         var dto = new RecipeUpdateDto(13, 26, Description: "?");
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
@@ -97,7 +97,7 @@ public class RecipeUpdateTests
     public async Task InvalidInstruction_ReturnsError()
     {
         // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
+        var recipe = new Recipe { Author = new User { Id = new UserId(26) } };
         var dto = new RecipeUpdateDto(13, 26, Instruction: "?");
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
@@ -115,7 +115,7 @@ public class RecipeUpdateTests
     public async Task InvalidDifficulty_ReturnsError()
     {
         // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
+        var recipe = new Recipe { Author = new User { Id = new UserId(26) } };
         var dto = new RecipeUpdateDto(13, 26, Difficulty: "INvaLID");
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
@@ -133,7 +133,7 @@ public class RecipeUpdateTests
     public async Task InvalidCookingTime_Format_ReturnsError()
     {
         // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
+        var recipe = new Recipe { Author = new User { Id = new UserId(26) } };
         var dto = new RecipeUpdateDto(13, 26, CookingTime: "-1:-1:-1:-1");
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
@@ -151,7 +151,7 @@ public class RecipeUpdateTests
     public async Task InvalidCookingTime_TooHuge_ReturnsError()
     {
         // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
+        var recipe = new Recipe { Author = new User { Id = new UserId(26) } };
         var dto = new RecipeUpdateDto(13, 26, CookingTime: "7.0:0:0");
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
@@ -169,7 +169,7 @@ public class RecipeUpdateTests
     public async Task InvalidCookingTime_TooSmall_ReturnsError()
     {
         // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
+        var recipe = new Recipe { Author = new User { Id = new UserId(26) } };
         var dto = new RecipeUpdateDto(13, 26, CookingTime: "-1");
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
@@ -187,7 +187,7 @@ public class RecipeUpdateTests
     public async Task InvalidIngredientName_ReturnsError()
     {
         // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
+        var recipe = new Recipe { Author = new User { Id = new UserId(26) } };
         var dto = new RecipeUpdateDto(13, 26, Ingredients: [new IngredientDto(".", 1, "grams")]);
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
@@ -205,7 +205,7 @@ public class RecipeUpdateTests
     public async Task InvalidIngredientCount_ZeroCount_ReturnsError()
     {
         // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
+        var recipe = new Recipe { Author = new User { Id = new UserId(26) } };
         var dto = new RecipeUpdateDto(13, 26, Ingredients: [new IngredientDto("egg", 0, "grams")]);
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
@@ -223,7 +223,7 @@ public class RecipeUpdateTests
     public async Task InvalidIngredientCount_TooMany_ReturnsError()
     {
         // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
+        var recipe = new Recipe { Author = new User { Id = new UserId(26) } };
         var dto = new RecipeUpdateDto(13, 26, Ingredients: [new IngredientDto("egg", 1_000_000, "Grams")]);
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
@@ -241,7 +241,7 @@ public class RecipeUpdateTests
     public async Task InvalidIngredient_MeasurementUnit_ReturnsError()
     {
         // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
+        var recipe = new Recipe { Author = new User { Id = new UserId(26) } };
         var dto = new RecipeUpdateDto(13, 26, Ingredients: [new IngredientDto("egg", 1_000, "Unknown")]);
         _mockRepo.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(recipe);
 
@@ -259,7 +259,7 @@ public class RecipeUpdateTests
     public async Task FullUpdateSuccessfully_ReturnsSuccess()
     {
         // Arrange
-        var recipe = new Recipe { AuthorId = new UserId(26) };
+        var recipe = new Recipe { Author = new User { Id = new UserId(26) } };
         var dto = new RecipeUpdateDto(
             13,
             26,

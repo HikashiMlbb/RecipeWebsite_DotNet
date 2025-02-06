@@ -5,7 +5,7 @@ namespace Domain.RecipeEntity;
 public sealed class Recipe
 {
     public Recipe(
-        UserId authorId,
+        User author,
         RecipeTitle title,
         RecipeDescription description,
         RecipeInstruction instruction,
@@ -16,7 +16,7 @@ public sealed class Recipe
         ICollection<Ingredient>? ingredients = null,
         ICollection<Comment>? comments = null)
     {
-        AuthorId = authorId;
+        Author = author;
         Title = title;
         Description = description;
         Instruction = instruction;
@@ -36,7 +36,7 @@ public sealed class Recipe
     }
 
     public RecipeId Id { get; set; } = null!;
-    public UserId AuthorId { get; set; }
+    public User Author { get; set; }
     public RecipeTitle Title { get; set; }
     public RecipeDescription Description { get; set; }
     public RecipeInstruction Instruction { get; set; }

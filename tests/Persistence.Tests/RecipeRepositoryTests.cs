@@ -48,7 +48,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         var userId =
             db.QueryFirst<int>("INSERT INTO Users VALUES (DEFAULT, 'Vovan', 'Password', 'Classic') RETURNING Id;");
         var recipe = new Recipe(
-            new UserId(userId),
+            new User{ Id = new UserId(userId) },
             RecipeTitle.Create("SomeRecipeTitle").Value!,
             RecipeDescription.Create(new string('b', 5000)).Value!,
             RecipeInstruction.Create("Some interesting instruction").Value!,
@@ -91,7 +91,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         };
 
         var recipe = new Recipe(
-            new UserId(userId),
+            new User { Id = new UserId(userId) },
             RecipeTitle.Create("SomeRecipeTitle").Value!,
             RecipeDescription.Create(new string('b', 5000)).Value!,
             RecipeInstruction.Create("Some interesting instruction").Value!,

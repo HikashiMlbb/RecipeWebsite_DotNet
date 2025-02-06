@@ -7,6 +7,7 @@ using Dapper.Transaction;
 using Domain.RecipeEntity;
 using Domain.UserEntity;
 using Persistence.Repositories.Dto;
+// ReSharper disable RedundantAnonymousTypePropertyName
 
 namespace Persistence.Repositories;
 
@@ -32,7 +33,7 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         
         var recipeId = await transaction.QueryFirstAsync<int>(recipeSql, new
         {
-            UserId = newRecipe.AuthorId.Value,
+            UserId = newRecipe.Author.Id.Value,
             Title = newRecipe.Title.Value,
             Description = newRecipe.Description.Value,
             Instruction = newRecipe.Instruction.Value,
@@ -66,7 +67,6 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         const string sql = """
                            SELECT 
                                 recipes.Id AS RecipeId,
-                                recipes.Author_Id AS AuthorId,
                                 recipes.Title,
                                 recipes.Description,
                                 recipes.Instruction,
@@ -76,6 +76,8 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
                                 recipes.Cooking_Time AS CookingTime,
                                 recipes.Rating,
                                 recipes.Votes,
+                                recipe_author.Id AS AuthorId,
+                                recipe_author.Username AS AuthorUsername,
                                 ingredients.Id AS IngredientId,
                                 ingredients.Name,
                                 ingredients.Count,
@@ -84,64 +86,67 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
                                 comments.Recipe_Id AS CommentSplit,
                                 comments.Content AS Content,
                                 comments.Published_At AS CommentPublishedAt,
-                                users.Id AS UserId,
-                                users.Username
+                                comment_author.Id AS CommentAuthorId,
+                                comment_author.Username AS CommentAuthorUsername
                            FROM Recipes recipes
+                           LEFT OUTER JOIN Users recipe_author ON recipe_author.Id = recipes.Author_Id
                            LEFT OUTER JOIN Ingredients ingredients ON ingredients.Recipe_Id = recipes.Id
                            LEFT OUTER JOIN Comments comments ON comments.Recipe_Id = recipes.Id
-                           LEFT OUTER JOIN Users users ON users.Id = comments.User_Id
+                           LEFT OUTER JOIN Users comment_author ON comment_author.Id = comments.User_Id
                            WHERE recipes.Id = @Id;
                            """;
 
         RecipeDatabaseDto? detailedDto = null;
 
-        var result =
-            (await db
-                .QueryAsync<RecipeDatabaseDto, IngredientDatabaseDto?, CommentDatabaseDto?, UserDatabaseDto,
-                    RecipeDatabaseDto>(
-                    sql,
-                    (recipeDto, ingredientDto, commentDto, userDto) =>
-                    {
-                        detailedDto ??= recipeDto;
-                        if (ingredientDto is not null &&
-                            detailedDto.Ingredients.SingleOrDefault(x => x.IngredientId == ingredientDto.IngredientId)
-                                is null)
-                            detailedDto.Ingredients.Add(ingredientDto);
+        var test = await db.QueryAsync(sql, new { Id = recipeId.Value });
 
-                        if (commentDto is not null &&
-                            detailedDto.Comments.SingleOrDefault(x => x.CommentId == commentDto.CommentId) is null)
-                            detailedDto.Comments.Add(commentDto with { Author = userDto });
+        var result = 
+            (await db.QueryAsync<RecipeDatabaseDto, RecipeAuthorDto, IngredientDatabaseDto?, CommentDatabaseDto?, CommentAuthorDto, RecipeDatabaseDto>(
+                sql,
+                (recipeDto, recipeAuthorDto, ingredientDto, commentDto, commentAuthorDto) =>
+                {
+                    detailedDto ??= recipeDto;
+                    detailedDto.Author = recipeAuthorDto;
 
-                        return detailedDto;
-                    },
-                    splitOn: "IngredientId, CommentId, UserId",
-                    param: new
+                    if (ingredientDto is not null && detailedDto.Ingredients.IsAbsent(ingredientDto.IngredientId))
                     {
-                        Id = recipeId.Value
-                    })).ToList();
+                        detailedDto.Ingredients.Add(ingredientDto);
+                    }
+
+                    if (commentDto is not null && detailedDto.Comments.IsAbsent(commentDto.CommentId))
+                    {
+                        detailedDto.Comments.Add(commentDto with { Author = commentAuthorDto });
+                    }
+
+                    return detailedDto;
+                },
+                new
+                {
+                    @Id = recipeId.Value
+                }, 
+                splitOn: "AuthorId, IngredientId, CommentId, CommentAuthorId")).ToList();
 
         if (result.Count == 0) return null;
 
         var uniqueResult = result.Distinct().Single();
 
 
-        var ingredients = uniqueResult.Ingredients.Count == 0
-            ? Array.Empty<Ingredient>()
-            : uniqueResult.Ingredients.Select(x =>
-                    Ingredient.Create(x.Name, x.Count, Enum.Parse<IngredientType>(x.UnitType, true)).Value)
-                .AsList() as ICollection<Ingredient>;
+        ICollection<Ingredient> ingredients = uniqueResult.Ingredients.Select(x => 
+            new Ingredient(x.Name, x.Count, Enum.Parse<IngredientType>(x.UnitType, ignoreCase: true))).AsList();
 
-        var comments = uniqueResult.Comments.Count == 0
-            ? Array.Empty<Comment>()
-            : uniqueResult.Comments.Select(x =>
-                Comment.Create(
-                    new User { Id = new UserId(x.Author.UserId), Username = Username.Create(x.Author.Username).Value! },
-                    x.Content, x.CommentPublishedAt).Value!).AsList() as ICollection<Comment>;
+        ICollection<Comment> comments = uniqueResult.Comments.Select(x =>
+            Comment.Create(
+                new User { Id = new UserId(x.Author.CommentAuthorId), Username = Username.Create(x.Author.CommentAuthorUsername).Value! },
+                x.Content, x.CommentPublishedAt).Value!).AsList();
 
         return new Recipe
         {
             Id = new RecipeId(uniqueResult.RecipeId),
-            AuthorId = new UserId(uniqueResult.AuthorId),
+            Author = new User
+            {
+                Id = new UserId(uniqueResult.Author.AuthorId),
+                Username = new Username(uniqueResult.Author.AuthorUsername)
+            },
             Title = RecipeTitle.Create(uniqueResult.Title).Value!,
             Description = RecipeDescription.Create(uniqueResult.Description).Value!,
             Instruction = RecipeInstruction.Create(uniqueResult.Instruction).Value!,

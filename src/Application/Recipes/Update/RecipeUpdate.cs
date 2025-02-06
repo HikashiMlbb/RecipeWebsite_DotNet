@@ -20,7 +20,7 @@ public class RecipeUpdate
         if (foundRecipe is null) return RecipeErrors.RecipeNotFound;
 
         var userId = new UserId(dto.UserId);
-        if (userId != foundRecipe.AuthorId) return RecipeErrors.UserIsNotAuthor;
+        if (userId != foundRecipe.Author.Id) return RecipeErrors.UserIsNotAuthor;
 
         var updateConfig = new RecipeUpdateConfig(recipeId);
 

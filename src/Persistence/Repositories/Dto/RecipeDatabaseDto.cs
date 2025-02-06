@@ -3,7 +3,7 @@ namespace Persistence.Repositories.Dto;
 public class RecipeDatabaseDto
 {
     public int RecipeId { get; set; }
-    public int AuthorId { get; set; }
+    public RecipeAuthorDto Author { get; set; } = null!;
     public string Title { get; set; } = null!;
     public string Description { get; set; } = null!;
     public string Instruction { get; set; } = null!;

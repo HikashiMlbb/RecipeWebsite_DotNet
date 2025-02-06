@@ -20,6 +20,7 @@ public class RecipeCreate
     public async Task<Result<RecipeId>> CreateAsync(RecipeCreateDto dto)
     {
         var authorId = new UserId(dto.AuthorId);
+        var author = (await _userRepo.SearchByIdAsync(authorId))!;
 
         var recipeTitleResult = RecipeTitle.Create(dto.Title);
         if (!recipeTitleResult.IsSuccess) return recipeTitleResult.Error!;
@@ -49,7 +50,7 @@ public class RecipeCreate
         var ingredients = ingredientMappingResult.Select(x => x.Value!).ToList();
 
         var newRecipe = new Recipe(
-            authorId,
+            author,
             recipeTitleResult.Value!,
             recipeDescriptionResult.Value!,
             recipeInstructionResult.Value!,
