@@ -35,6 +35,23 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+#region Adding CORS
+
+const string allowSpecificOrigin = "AllowSpecificOrigin";
+var specificOrigin = builder.Configuration.GetValue<string>("TRUSTED_ORIGIN");
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: allowSpecificOrigin, policy =>
+    {
+        policy.WithOrigins(specificOrigin ?? "")
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
+#endregion
+
 #region Authentication & Authorization
 
 var jwtSettings = new JwtSettings();
@@ -115,6 +132,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors(allowSpecificOrigin);
 
 var staticDirectoryPath = Path.Combine(builder.Environment.ContentRootPath, "static");
 Directory.CreateDirectory(staticDirectoryPath);
