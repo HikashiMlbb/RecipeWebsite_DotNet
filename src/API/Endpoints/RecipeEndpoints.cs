@@ -122,8 +122,7 @@ public static class RecipeEndpoints
             Author = new
             {
                 Id = result.Author.Id.Value,
-                Username = result.Author.Username.Value,
-                Role = result.Author.Role.ToString()
+                Username = result.Author.Username.Value
             },
             Title = result.Title.Value,
             Description = result.Description.Value,
