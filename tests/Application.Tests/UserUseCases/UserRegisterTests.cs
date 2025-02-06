@@ -12,15 +12,17 @@ public class UserRegisterTests
 {
     private readonly Mock<IJwtService> _jwtServiceMock;
     private readonly Mock<IPasswordService> _passwordServiceMock;
-    private readonly UserRegister _useCase;
     private readonly Mock<IUserRepository> _userRepositoryMock;
+    private readonly Mock<IUserPrivilegeService> _privilegeMock;
+    private readonly UserRegister _useCase;
 
     public UserRegisterTests()
     {
         _userRepositoryMock = new Mock<IUserRepository>();
         _passwordServiceMock = new Mock<IPasswordService>();
         _jwtServiceMock = new Mock<IJwtService>();
-        _useCase = new UserRegister(_userRepositoryMock.Object, _passwordServiceMock.Object, _jwtServiceMock.Object);
+        _privilegeMock = new Mock<IUserPrivilegeService>();
+        _useCase = new UserRegister(_userRepositoryMock.Object, _passwordServiceMock.Object, _jwtServiceMock.Object, _privilegeMock.Object);
     }
 
     [Fact]
@@ -69,6 +71,7 @@ public class UserRegisterTests
             .ReturnsAsync(new Password(expectedPassword));
         _userRepositoryMock.Setup(repo => repo.InsertAsync(It.IsAny<User>())).ReturnsAsync(new UserId(123));
         _jwtServiceMock.Setup(service => service.SignTokenAsync(It.IsAny<UserId>())).ReturnsAsync(expectedToken);
+        _privilegeMock.Setup(x => x.IsAdminUsername(It.IsAny<Username>())).Returns(false);
 
         // Act
         var result = await _useCase.RegisterAsync(dto);
