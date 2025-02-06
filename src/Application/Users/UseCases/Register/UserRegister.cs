@@ -9,12 +9,14 @@ public class UserRegister
     private readonly IJwtService _jwtService;
     private readonly IPasswordService _passwordService;
     private readonly IUserRepository _userRepository;
+    private readonly IUserPrivilegeService _privilegeService;
 
-    public UserRegister(IUserRepository userRepo, IPasswordService passwordService, IJwtService jwtService)
+    public UserRegister(IUserRepository userRepo, IPasswordService passwordService, IJwtService jwtService, IUserPrivilegeService privilegeService)
     {
         _userRepository = userRepo;
         _passwordService = passwordService;
         _jwtService = jwtService;
+        _privilegeService = privilegeService;
     }
 
     public async Task<Result<string>> RegisterAsync(UserDto dto)
@@ -27,7 +29,11 @@ public class UserRegister
 
         if (dto.Password is not { } userPassword) return UserErrors.PasswordIsIncorrect;
         var password = await _passwordService.CreateAsync(userPassword);
-        var newUser = new User(username, password);
+
+        var role = default(UserRole);
+        if (_privilegeService.IsAdminUsername(username)) role = UserRole.Admin;
+        
+        var newUser = new User(username, password, role);
         var result = await _userRepository.InsertAsync(newUser);
 
         return await _jwtService.SignTokenAsync(result);
