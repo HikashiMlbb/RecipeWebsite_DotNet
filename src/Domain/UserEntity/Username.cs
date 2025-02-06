@@ -9,7 +9,7 @@ public sealed record Username
     private static readonly Regex AllowedSymbolsRegex = new(@"^[a-zA-Z][a-zA-Z|_\-0-9]*[a-zA-Z0-9]$");
 #pragma warning restore SYSLIB1045
 
-    private Username(string value)
+    internal Username(string value)
     {
         Value = value;
     }

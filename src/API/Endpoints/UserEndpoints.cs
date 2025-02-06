@@ -77,6 +77,7 @@ public static class UserEndpoints
             {
                 Id = result.Id.Value,
                 Username = result.Username.Value,
+                Role = result.Role.ToString(),
                 Recipes = result.Recipes.Select(x => new
                 {
                     Id = x.Id.Value,

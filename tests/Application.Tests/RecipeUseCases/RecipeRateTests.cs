@@ -1,5 +1,6 @@
 using Application.Recipes;
 using Application.Recipes.Rate;
+using Application.Users.UseCases;
 using Domain.RecipeEntity;
 using Domain.UserEntity;
 using Moq;
@@ -11,11 +12,13 @@ namespace Application.Tests.RecipeUseCases;
 public class RecipeRateTests
 {
     private readonly Mock<IRecipeRepository> _repoMock;
+    private readonly Mock<IUserRepository> _userMock;
     private readonly RecipeRate _useCase;
 
     public RecipeRateTests()
     {
         _repoMock = new Mock<IRecipeRepository>();
+        _userMock = new Mock<IUserRepository>();
         _useCase = new RecipeRate(_repoMock.Object);
     }
 
@@ -40,7 +43,7 @@ public class RecipeRateTests
     public async Task StarsAreNotDefined_ReturnsError()
     {
         // Arrange
-        var obj = new Recipe();
+        var obj = new Recipe { Author = new User { Id = new UserId(1111) } };
         var dto1 = new RecipeRateDto(1234, 5678, 0);
         var dto2 = new RecipeRateDto(1234, 5678, -1);
         var dto3 = new RecipeRateDto(1234, 5678, 6);
@@ -66,12 +69,12 @@ public class RecipeRateTests
     public async Task UserIsAuthor_ReturnsError()
     {
         // Arrange
-        var userId = new UserId(15);
+        var user = new User { Id = new UserId(15) };
         var obj = new Recipe
         {
-            AuthorId = userId
+            Author = user
         };
-        var dto = new RecipeRateDto(userId.Value, 5678, 5);
+        var dto = new RecipeRateDto(user.Id.Value, 5678, 5);
         _repoMock.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(obj);
 
         // Act
@@ -88,7 +91,7 @@ public class RecipeRateTests
     public async Task RateSuccessfully_ReturnsSuccess()
     {
         // Arrange
-        var obj = new Recipe();
+        var obj = new Recipe { Author = new User { Id = new UserId(1111) } };
         var dto = new RecipeRateDto(1234, 5678, 1);
         _repoMock.Setup(x => x.SearchByIdAsync(It.IsAny<RecipeId>())).ReturnsAsync(obj);
 

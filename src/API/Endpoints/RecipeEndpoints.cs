@@ -116,15 +116,13 @@ public static class RecipeEndpoints
         var result = await recipeService.GetRecipeAsync(recipeId);
         if (result is null) return Results.NotFound();
 
-        var author = (await userService.GetUserAsync(result.AuthorId.Value))!;
-
         return Results.Ok(new
         {
             Id = result.Id.Value,
             Author = new
             {
-                Id = author.Id.Value,
-                Username = author.Username.Value
+                Id = result.Author.Id.Value,
+                Username = result.Author.Username.Value
             },
             Title = result.Title.Value,
             Description = result.Description.Value,

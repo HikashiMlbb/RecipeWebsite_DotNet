@@ -82,6 +82,7 @@ builder.Services
 
 #region Registration of Infrastructure Layer
 
+var adminUsername = builder.Configuration.GetValue<string>("ADMIN_USERNAME");
 var jwtDescriptorConfig = new JwtDescriptorConfig
 {
     Issuer = jwtSettings.Issuer,
@@ -93,6 +94,7 @@ var jwtDescriptorConfig = new JwtDescriptorConfig
 builder.Services.AddScoped(typeof(JwtDescriptorConfig), _ => jwtDescriptorConfig);
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
+builder.Services.AddScoped<IUserPrivilegeService>(_ => new UserPrivilegeService(adminUsername));
 
 #endregion
 
