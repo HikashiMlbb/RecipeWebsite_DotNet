@@ -35,6 +35,8 @@ builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHealthChecks();
+
 #region Adding CORS
 
 const string allowSpecificOrigin = "AllowSpecificOrigin";
@@ -145,6 +147,7 @@ app.UseStaticFiles(new StaticFileOptions
 
 app.MapUserEndpoints("/api/users");
 app.MapRecipeEndpoints("/api/recipes");
+app.MapHealthChecks("/healthz");
 
 using (var scope = app.Services.CreateScope())
 {
