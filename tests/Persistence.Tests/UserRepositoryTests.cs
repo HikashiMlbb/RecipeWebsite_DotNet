@@ -144,10 +144,10 @@ public class UserRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync(
-            "INSERT INTO Users (Id, Username, Password, Role) VALUES (@Id, @Username, @Password, @Role);", new
+            "INSERT INTO \"Users\" (\"Id\", \"Username\", \"Password\", \"Role\") VALUES (@Id, @Username, @Password, @Role);", new
             {
                 Id = userId.Value,
-                Username = username.Value!,
+                Username = username.Value,
                 Password = password.PasswordHash,
                 Role = UserRole.Classic.ToString()
             });
@@ -182,7 +182,7 @@ public class UserRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync(
-            "INSERT INTO Users (Id, Username, Password, Role) VALUES (@Id, @Username, @Password, @Role);", new
+            "INSERT INTO \"Users\" (\"Id\", \"Username\", \"Password\", \"Role\") VALUES (@Id, @Username, @Password, @Role);", new
             {
                 Id = userId.Value,
                 Username = username.Value!,
@@ -191,7 +191,7 @@ public class UserRepositoryTests : IAsyncLifetime
             });
 
         await db.ExecuteAsync(
-            "INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, @Description, @Instruction, @ImageName, @Difficulty, @PublishedAt, @CookingTime, @Rating, @Votes);",
+            "INSERT INTO \"Recipes\" VALUES (@Id, @AuthorId, @Title, @Description, @Instruction, @ImageName, @Difficulty, @PublishedAt, @CookingTime, @Rating, @Votes);",
             new
             {
                 Id = recipeId.Value,

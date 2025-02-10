@@ -61,23 +61,23 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
 
         const string sql = """
                            SELECT
-                                users.Id AS UserId,
-                                users.Username,
-                                users.Password,
-                                users.Role,
-                                recipes.Id AS RecipeId,
-                                recipes.Title,
-                                recipes.Image_Name AS ImageName,
-                                recipes.Difficulty,
-                                recipes.Cooking_Time AS CookingTime,
-                                recipes.Rating,
-                                recipes.Votes
-                           FROM Users users
-                           LEFT OUTER JOIN Recipes recipes ON recipes.Author_Id = users.Id
-                           WHERE users.Id = @Id
+                                users."Id" AS "UserId",
+                                users."Username",
+                                users."Password",
+                                users."Role",
+                                recipes."Id" AS "RecipeId",
+                                recipes."Title",
+                                recipes."ImageName",
+                                recipes."Difficulty",
+                                recipes."CookingTime",
+                                recipes."Rating",
+                                recipes."Votes"
+                           FROM "Users" users
+                           LEFT OUTER JOIN "Recipes" recipes ON recipes."AuthorId" = users."Id"
+                           WHERE users."Id" = @Id
                            ORDER BY 
-                               recipes.Votes DESC,
-                               recipes.Rating DESC;
+                               recipes."Votes" DESC,
+                               recipes."Rating" DESC;
                            """;
 
         var result = (await db.QueryAsync<UserDatabaseDto, RecipeDatabaseDto, UserDatabaseDto>(sql,
