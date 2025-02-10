@@ -238,7 +238,7 @@ public class UserRepositoryTests : IAsyncLifetime
         _repository = new UserRepository(new DapperConnectionFactory(_container.GetConnectionString()));
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
-        await db.ExecuteAsync("INSERT INTO Users VALUES (@UserId, 'Vasyan', '$omeHa$hedPa$$w0rd', 'classic');",
+        await db.ExecuteAsync("INSERT INTO \"Users\" VALUES (@UserId, 'Vasyan', '$omeHa$hedPa$$w0rd', 'classic');",
             new { UserId = userId.Value });
 
         #endregion
@@ -246,7 +246,7 @@ public class UserRepositoryTests : IAsyncLifetime
         #region Act
 
         await _repository.UpdatePasswordAsync(new UserId(6), new Password("$0m3_=+=_@n0th3r_=+=_h@$hed_=+=_p@$$w0rd"));
-        var result = await db.QuerySingleAsync<string>("SELECT Password FROM Users;");
+        var result = await db.QuerySingleAsync<string>("SELECT \"Password\" FROM \"Users\";");
 
         #endregion
 

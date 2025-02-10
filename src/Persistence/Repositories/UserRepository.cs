@@ -129,7 +129,7 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
         await using var db = dbFactory.Create();
         await db.OpenAsync();
 
-        const string sql = "UPDATE Users SET Password = @Password WHERE Id = @Id";
+        const string sql = "UPDATE \"Users\" SET \"Password\" = @Password WHERE \"Id\" = @Id";
         await db.ExecuteAsync(sql, new
         {
             Password = newHashedPassword.PasswordHash,
