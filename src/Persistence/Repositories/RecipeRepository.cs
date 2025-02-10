@@ -23,9 +23,9 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         await using var transaction = await db.BeginTransactionAsync();
 
         const string recipeSql = """
-                                 INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                                 INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                                  VALUES (DEFAULT, @UserId, @Title, @Description, @Instruction, @ImageName, @Difficulty, @PublishedAt, @CookingTime, @Rating, @Votes)
-                                 RETURNING Id;
+                                 RETURNING "Id";
                                  """;
 
         var recipeId = await transaction.QueryFirstAsync<int>(recipeSql, new
@@ -42,9 +42,9 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
             Votes = 0
         });
         
-        await transaction.UseBulkOptions(x => x.DestinationTableName = "ingredients").BulkInsertAsync(newRecipe.Ingredients.Select(x => new
+        await transaction.UseBulkOptions(x => x.DestinationTableName = "Ingredients").BulkInsertAsync(newRecipe.Ingredients.Select(x => new
         {
-            Recipe_Id = recipeId,
+            RecipeId = recipeId,
             Name = x.Name,
             Count = x.Count,
             Unit = x.UnitType.ToString()

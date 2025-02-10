@@ -46,7 +46,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         var userId =
-            db.QueryFirst<int>("INSERT INTO Users VALUES (DEFAULT, 'Vovan', 'Password', 'Classic') RETURNING Id;");
+            db.QueryFirst<int>("INSERT INTO \"Users\" VALUES (DEFAULT, 'Vovan', 'Password', 'Classic') RETURNING \"Id\";");
         var recipe = new Recipe(
             new User{ Id = new UserId(userId) },
             RecipeTitle.Create("SomeRecipeTitle").Value!,
@@ -61,7 +61,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         #region Act
 
         var recipeId = await _repo.InsertAsync(recipe);
-        var (dbId, dbAuthorId) = await db.QuerySingleAsync<(int, int)>("SELECT Id, Author_Id FROM Recipes;");
+        var (dbId, dbAuthorId) = await db.QuerySingleAsync<(int, int)>("SELECT \"Id\", \"AuthorId\" FROM \"Recipes\";");
 
         #endregion
 
@@ -82,7 +82,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
 
-        var userId = db.QueryFirst<int>("INSERT INTO Users VALUES (16, 'Vovan', 'Password', 'Classic') RETURNING Id;");
+        var userId = db.QueryFirst<int>("INSERT INTO \"Users\" VALUES (16, 'Vovan', 'Password', 'Classic') RETURNING \"Id\";");
         var ingredients = new[]
         {
             Ingredient.Create("Some One Ingredient Name", 5, IngredientType.Cups).Value!,
@@ -105,7 +105,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         #region Act
 
         var recipeId = await _repo.InsertAsync(recipe);
-        var (dbId, dbAuthorId) = await db.QuerySingleAsync<(int, int)>("SELECT Id, Author_Id FROM Recipes;");
+        var (dbId, dbAuthorId) = await db.QuerySingleAsync<(int, int)>("SELECT \"Id\", \"AuthorId\" FROM \"Recipes\";");
 
         #endregion
 
