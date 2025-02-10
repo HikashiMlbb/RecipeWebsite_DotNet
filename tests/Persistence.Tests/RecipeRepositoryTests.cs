@@ -590,21 +590,21 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (101, 'Username1', 'Password', 'classic'),
                                      (102, 'Username2', 'Password', 'classic'),
                                      (103, 'Username3', 'Password', 'classic'),
                                      (104, 'Username4', 'Password', 'classic'),
                                      (105, 'Username5', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
                                      (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
                                      (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
                                      (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
                                      (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
 
-                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              INSERT INTO "RecipeRatings" ("RecipeId", "UserId", "Rate")
                               VALUES (503, 101, 1),
                                      (503, 102, 1),
                                      (503, 103, 1),
@@ -647,21 +647,21 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (101, 'Username1', 'Password', 'classic'),
                                      (102, 'Username2', 'Password', 'classic'),
                                      (103, 'Username3', 'Password', 'classic'),
                                      (104, 'Username4', 'Password', 'classic'),
                                      (105, 'Username5', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
                                      (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
                                      (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
                                      (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
                                      (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
 
-                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              INSERT INTO "RecipeRatings" ("RecipeId", "UserId", "Rate")
                               VALUES (503, 101, 1),
                                      (503, 102, 1),
                                      (503, 103, 1),
@@ -706,21 +706,21 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (101, 'Username1', 'Password', 'classic'),
                                      (102, 'Username2', 'Password', 'classic'),
                                      (103, 'Username3', 'Password', 'classic'),
                                      (104, 'Username4', 'Password', 'classic'),
                                      (105, 'Username5', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
                                      (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
                                      (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
                                      (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
                                      (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
 
-                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              INSERT INTO "RecipeRatings" ("RecipeId", "UserId", "Rate")
                               VALUES (503, 101, 1),
                                      (503, 102, 1),
                                      (503, 103, 1),
@@ -762,21 +762,21 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (101, 'Username1', 'Password', 'classic'),
                                      (102, 'Username2', 'Password', 'classic'),
                                      (103, 'Username3', 'Password', 'classic'),
                                      (104, 'Username4', 'Password', 'classic'),
                                      (105, 'Username5', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
                                      (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
                                      (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
                                      (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
                                      (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
 
-                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              INSERT INTO "RecipeRatings" ("RecipeId", "UserId", "Rate")
                               VALUES (503, 101, 1),
                                      (503, 102, 1),
                                      (503, 103, 1),
@@ -818,21 +818,21 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (101, 'Username1', 'Password', 'classic'),
                                      (102, 'Username2', 'Password', 'classic'),
                                      (103, 'Username3', 'Password', 'classic'),
                                      (104, 'Username4', 'Password', 'classic'),
                                      (105, 'Username5', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
                                      (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
                                      (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
                                      (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
                                      (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
 
-                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              INSERT INTO "RecipeRatings" ("RecipeId", "UserId", "Rate")
                               VALUES (503, 101, 1),
                                      (503, 102, 1),
                                      (503, 103, 1),
@@ -873,21 +873,21 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (101, 'Username1', 'Password', 'classic'),
                                      (102, 'Username2', 'Password', 'classic'),
                                      (103, 'Username3', 'Password', 'classic'),
                                      (104, 'Username4', 'Password', 'classic'),
                                      (105, 'Username5', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
                                      (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
                                      (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
                                      (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
                                      (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
 
-                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              INSERT INTO "RecipeRatings" ("RecipeId", "UserId", "Rate")
                               VALUES (503, 101, 1),
                                      (503, 102, 1),
                                      (503, 103, 1),
@@ -929,21 +929,21 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (101, 'Username1', 'Password', 'classic'),
                                      (102, 'Username2', 'Password', 'classic'),
                                      (103, 'Username3', 'Password', 'classic'),
                                      (104, 'Username4', 'Password', 'classic'),
                                      (105, 'Username5', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
                                      (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
                                      (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
                                      (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
                                      (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
 
-                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              INSERT INTO "RecipeRatings" ("RecipeId", "UserId", "Rate")
                               VALUES (503, 101, 1),
                                      (503, 102, 1),
                                      (503, 103, 1),
@@ -985,21 +985,21 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (101, 'Username1', 'Password', 'classic'),
                                      (102, 'Username2', 'Password', 'classic'),
                                      (103, 'Username3', 'Password', 'classic'),
                                      (104, 'Username4', 'Password', 'classic'),
                                      (105, 'Username5', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (501, 101, 'T', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
                                      (502, 102, 'T', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
                                      (503, 103, 'T', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
                                      (504, 104, 'T', 'D', 'I', 'IMG', 'easy', '2024-05-01 13:13:15+00', '2h', 0, 0),
                                      (505, 105, 'T', 'D', 'I', 'IMG', 'easy', '2025-01-05 13:13:15+00', '2h', 0, 0);
 
-                              INSERT INTO Recipe_Ratings (Recipe_Id, User_Id, Rate)
+                              INSERT INTO "RecipeRatings" ("RecipeId", "UserId", "Rate")
                               VALUES (503, 101, 1),
                                      (503, 102, 1),
                                      (503, 103, 1),

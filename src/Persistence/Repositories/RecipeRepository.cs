@@ -195,14 +195,14 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
 
         const string sqlBeginning = """
                                     SELECT
-                                         Id AS RecipeId,
-                                         Title,
-                                         Image_Name AS ImageName,
-                                         Difficulty,
-                                         Cooking_Time AS CookingTime,
-                                         Rating,
-                                         Votes
-                                    FROM Recipes
+                                         "Id" AS "RecipeId",
+                                         "Title",
+                                         "ImageName",
+                                         "Difficulty",
+                                         "CookingTime",
+                                         "Rating",
+                                         "Votes"
+                                    FROM "Recipes"
 
                                     """;
 
@@ -214,11 +214,11 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
 
         const string popular = """
                                ORDER BY
-                                    Votes DESC,
-                                    Rating DESC
+                                    "Votes" DESC,
+                                    "Rating" DESC
                                """;
 
-        const string newest = "ORDER BY Published_At DESC";
+        const string newest = "ORDER BY \"PublishedAt\" DESC";
 
         var chosenSort = sortType switch
         {
