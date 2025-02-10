@@ -88,7 +88,7 @@ public static class DapperDatabase
                                                            ELSIF TG_OP = 'DELETE' THEN
                                                                UPDATE "Recipes" SET 
                                                                    "Votes" = (SELECT COUNT(*) FROM "RecipeRatings" WHERE "RecipeId" = OLD."RecipeId"),
-                                                                   "Rating" = (SELECT AVG("Rate") FROM "RecipeRatings" WHERE "RecipeId" = OLD."RecipeId")
+                                                                   "Rating" = (SELECT COALESCE(AVG("Rate"), 0) FROM "RecipeRatings" WHERE "RecipeId" = OLD."RecipeId")
                                                                WHERE "Id" = OLD."RecipeId";
                                                                RETURN OLD;
                                                            END IF;

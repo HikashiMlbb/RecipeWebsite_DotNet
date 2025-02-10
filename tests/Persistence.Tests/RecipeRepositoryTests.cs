@@ -154,13 +154,13 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
 
-        await db.ExecuteAsync("INSERT INTO Users VALUES (@Id, 'Vovan', 'A1234', 'classic')", new
+        await db.ExecuteAsync("INSERT INTO \"Users\" VALUES (@Id, 'Vovan', 'A1234', 'classic')", new
         {
             Id = userId.Value
         });
 
         await db.ExecuteAsync(
-            "INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, 'D', 'I', 'Img', 'hard', now(), '2h', 0, 0);", new
+            "INSERT INTO \"Recipes\" VALUES (@Id, @AuthorId, @Title, 'D', 'I', 'Img', 'hard', now(), '2h', 0, 0);", new
             {
                 Id = recipeId.Value,
                 AuthorId = userId.Value,
@@ -204,23 +204,25 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
 
-        await db.ExecuteAsync("INSERT INTO Users VALUES (@Id, 'Vovan', 'A1234', 'classic')", new
+        await db.ExecuteAsync("INSERT INTO \"Users\" VALUES (@Id, 'Vovan', 'A1234', 'classic')", new
         {
             Id = userId.Value
         });
 
         await db.ExecuteAsync(
-            "INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, 'D', 'I', 'Img', 'hard', now(), '2h', 0, 0);", new
+            "INSERT INTO \"Recipes\" VALUES (@Id, @AuthorId, @Title, 'D', 'I', 'Img', 'hard', now(), '2h', 0, 0);", new
             {
                 Id = recipeId.Value,
                 AuthorId = userId.Value,
                 Title = title.Value
             });
 
-        await db.ExecuteAsync(@"INSERT INTO Ingredients (Recipe_Id, Name, Count, Unit)
-                VALUES (@RecipeId, @Name1, @Count1, @Unit1),
-                (@RecipeId, @Name2, @Count2, @Unit2),
-                (@RecipeId, @Name3, @Count3, @Unit3)", new
+        await db.ExecuteAsync("""
+                              INSERT INTO "Ingredients" ("RecipeId", "Name", "Count", "Unit") VALUES 
+                              (@RecipeId, @Name1, @Count1, @Unit1),
+                              (@RecipeId, @Name2, @Count2, @Unit2),
+                              (@RecipeId, @Name3, @Count3, @Unit3)
+                              """, new
         {
             RecipeId = recipeId.Value,
             Name1 = ingredients[0].Name,
@@ -284,14 +286,14 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync(
-            "INSERT INTO Users VALUES (@Id, 'Vovan', 'A1234', 'classic'), (70, 'Petr', 'SomePassword', 'classic'), (71, 'zxcursed', 'AnotherPassword', 'admin');",
+            "INSERT INTO \"Users\" VALUES (@Id, 'Vovan', 'A1234', 'classic'), (70, 'Petr', 'SomePassword', 'classic'), (71, 'zxcursed', 'AnotherPassword', 'admin');",
             new
             {
                 Id = userId.Value
             });
 
         await db.ExecuteAsync(
-            "INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, 'D', 'I', 'Img', 'hard', now(), '2h', 0, 0);", new
+            "INSERT INTO \"Recipes\" VALUES (@Id, @AuthorId, @Title, 'D', 'I', 'Img', 'hard', now(), '2h', 0, 0);", new
             {
                 Id = recipeId.Value,
                 AuthorId = userId.Value,
@@ -299,10 +301,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
             });
 
         await db.ExecuteAsync("""
-                              INSERT INTO Ingredients (Recipe_Id, Name, Count, Unit)
-                                              VALUES (@RecipeId, @Name1, @Count1, @Unit1),
-                                              (@RecipeId, @Name2, @Count2, @Unit2),
-                                              (@RecipeId, @Name3, @Count3, @Unit3)
+                              INSERT INTO "Ingredients" ("RecipeId", "Name", "Count", "Unit") VALUES
+                              (@RecipeId, @Name1, @Count1, @Unit1),
+                              (@RecipeId, @Name2, @Count2, @Unit2),
+                              (@RecipeId, @Name3, @Count3, @Unit3)
                               """, new
         {
             RecipeId = recipeId.Value,
@@ -317,10 +319,12 @@ public class RecipeRepositoryTests : IAsyncLifetime
             Unit3 = ingredients[2].UnitType.ToString()
         });
 
-        await db.ExecuteAsync(@"INSERT INTO Comments (Recipe_Id, User_Id, Content, Published_At)
-                VALUES (@RecipeId, @UserId, @Content1, @PublishedAt1),
-                       (@RecipeId, @UserId2, @Content2, @PublishedAt2),
-                       (@RecipeId, @UserId3, @Content3, @PublishedAt3);", new
+        await db.ExecuteAsync("""
+                              INSERT INTO "Comments" ("RecipeId", "UserId", "Content", "PublishedAt") VALUES
+                              (@RecipeId, @UserId, @Content1, @PublishedAt1),
+                              (@RecipeId, @UserId2, @Content2, @PublishedAt2),
+                              (@RecipeId, @UserId3, @Content3, @PublishedAt3);
+                              """, new
         {
             RecipeId = recipeId.Value,
             UserId = userId.Value,
@@ -367,10 +371,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (123, 'Peter', 'Password1234', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (456, 123, 'RecipeTitle', 'RecipeD', 'RI', 'IMG', 'hard', now(), '2h', 0, 0);
                               """);
 
@@ -380,7 +384,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         var result = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
         var (rate, votes) =
-            await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
+            await db.QueryFirstAsync<(decimal, int)>("SELECT \"Rating\", \"Votes\" FROM \"Recipes\" WHERE \"Id\" = 456");
 
         #endregion
 
@@ -403,11 +407,11 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (123, 'Peter', 'Password1234', 'classic'),
                                      (321, 'Ivan', '1234Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (456, 123, 'RecipeTitle', 'RecipeD', 'RI', 'IMG', 'hard', now(), '2h', 0, 0);
                               """);
 
@@ -418,7 +422,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         var rate1 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
         var rate2 = await _repo.RateAsync(new RecipeId(456), new UserId(321), Stars.Three);
         var (rate, votes) =
-            await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
+            await db.QueryFirstAsync<(decimal, int)>("SELECT \"Rating\", \"Votes\" FROM \"Recipes\" WHERE \"Id\" = 456");
 
         #endregion
 
@@ -442,10 +446,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (123, 'Peter', 'Password1234', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (456, 123, 'RecipeTitle', 'RecipeD', 'RI', 'IMG', 'hard', now(), '2h', 0, 0);
                               """);
 
@@ -456,7 +460,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         var rate1 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
         var rate2 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Three);
         var (rate, votes) =
-            await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
+            await db.QueryFirstAsync<(decimal, int)>("SELECT \"Rating\", \"Votes\" FROM \"Recipes\" WHERE \"Id\" = 456");
 
         #endregion
 
@@ -480,10 +484,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (123, 'Peter', 'Password1234', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (456, 123, 'RecipeTitle', 'RecipeD', 'RI', 'IMG', 'hard', now(), '2h', 0, 0);
                               """);
 
@@ -494,7 +498,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         var rate1 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
         var rate2 = await _repo.RateAsync(new RecipeId(456), new UserId(123), Stars.Five);
         var (rate, votes) =
-            await db.QueryFirstAsync<(decimal, int)>("SELECT Rating, Votes FROM Recipes WHERE Id = 456");
+            await db.QueryFirstAsync<(decimal, int)>("SELECT \"Rating\", \"Votes\" FROM \"Recipes\" WHERE \"Id\" = 456");
 
         #endregion
 

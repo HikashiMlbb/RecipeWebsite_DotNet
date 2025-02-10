@@ -62,34 +62,33 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
 
         const string sql = """
                            SELECT 
-                                recipes.Id AS RecipeId,
-                                recipes.Title,
-                                recipes.Description,
-                                recipes.Instruction,
-                                recipes.Image_Name AS ImageName,
-                                recipes.Difficulty,
-                                recipes.Published_At AS PublishedAt,
-                                recipes.Cooking_Time AS CookingTime,
-                                recipes.Rating,
-                                recipes.Votes,
-                                recipe_author.Id AS AuthorId,
-                                recipe_author.Username AS AuthorUsername,
-                                ingredients.Id AS IngredientId,
-                                ingredients.Name,
-                                ingredients.Count,
-                                ingredients.Unit AS UnitType,
-                                comments.Id AS CommentId,
-                                comments.Recipe_Id AS CommentSplit,
-                                comments.Content AS Content,
-                                comments.Published_At AS CommentPublishedAt,
-                                comment_author.Id AS CommentAuthorId,
-                                comment_author.Username AS CommentAuthorUsername
-                           FROM Recipes recipes
-                           LEFT OUTER JOIN Users recipe_author ON recipe_author.Id = recipes.Author_Id
-                           LEFT OUTER JOIN Ingredients ingredients ON ingredients.Recipe_Id = recipes.Id
-                           LEFT OUTER JOIN Comments comments ON comments.Recipe_Id = recipes.Id
-                           LEFT OUTER JOIN Users comment_author ON comment_author.Id = comments.User_Id
-                           WHERE recipes.Id = @Id;
+                                recipes."Id" AS "RecipeId",
+                                recipes."Title",
+                                recipes."Description",
+                                recipes."Instruction",
+                                recipes."ImageName",
+                                recipes."Difficulty",
+                                recipes."PublishedAt",
+                                recipes."CookingTime",
+                                recipes."Rating",
+                                recipes."Votes",
+                                recipe_author."Id" AS "AuthorId",
+                                recipe_author."Username" AS "AuthorUsername",
+                                ingredients."Id" AS "IngredientId",
+                                ingredients."Name",
+                                ingredients."Count",
+                                ingredients."Unit" AS "UnitType",
+                                comments."Id" AS "CommentId",
+                                comments."Content",
+                                comments."PublishedAt" AS "CommentPublishedAt",
+                                comment_author."Id" AS "CommentAuthorId",
+                                comment_author."Username" AS "CommentAuthorUsername"
+                           FROM "Recipes" recipes
+                           LEFT OUTER JOIN "Users" recipe_author ON recipe_author."Id" = recipes."AuthorId"
+                           LEFT OUTER JOIN "Ingredients" ingredients ON ingredients."RecipeId" = recipes."Id"
+                           LEFT OUTER JOIN "Comments" comments ON comments."RecipeId" = recipes."Id"
+                           LEFT OUTER JOIN "Users" comment_author ON comment_author."Id" = comments."UserId"
+                           WHERE recipes."Id" = @Id;
                            """;
 
         RecipeDatabaseDto? detailedDto = null;
@@ -159,7 +158,7 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         await using var db = factory.Create();
         await db.OpenAsync();
 
-        const string sql = "SELECT Rate_Recipe(@RecipeId, @UserId, @Rate)";
+        const string sql = "SELECT \"RateRecipe\"(@RecipeId, @UserId, @Rate)";
 
         var newRate = await db.QueryFirstAsync<int>(sql, new
         {
