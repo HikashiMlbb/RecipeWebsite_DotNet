@@ -36,10 +36,10 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
         await db.OpenAsync();
 
         const string sql = """
-                           INSERT INTO Users (Id, Username, Password, Role) 
+                           INSERT INTO "Users" ("Id", "Username", "Password", "Role") 
                            VALUES (DEFAULT, @Username, @Password, @Role) 
-                           ON CONFLICT (Username) DO NOTHING
-                           RETURNING Id;
+                           ON CONFLICT ("Username") DO NOTHING
+                           RETURNING "Id";
                            """;
         var result = await db.QueryFirstOrDefaultAsync<int>(sql, new
         {

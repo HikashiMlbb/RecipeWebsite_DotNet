@@ -49,7 +49,7 @@ public class UserRepositoryTests : IAsyncLifetime
 
         // Act
         var result = await _repository.InsertAsync(user);
-        var custom = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Users;");
+        var custom = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM \"Users\";");
 
         // Assert
         Assert.True(custom == 1);
@@ -70,7 +70,7 @@ public class UserRepositoryTests : IAsyncLifetime
         // Act
         var resultSuccess = await _repository.InsertAsync(user);
         var resultFailure = await _repository.InsertAsync(user);
-        var custom = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Users;");
+        var custom = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM \"Users\";");
 
         // Assert
         Assert.True(custom == 1);
