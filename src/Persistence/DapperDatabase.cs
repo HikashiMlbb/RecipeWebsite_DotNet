@@ -61,7 +61,7 @@ public static class DapperDatabase
                                                       Id BIGSERIAL PRIMARY KEY,
                                                       Recipe_Id INT NOT NULL REFERENCES Recipes(Id) ON DELETE CASCADE,
                                                       Name TEXT NOT NULL,
-                                                      Count REAL NOT NULL,
+                                                      Count DECIMAL NOT NULL,
                                                       Unit TEXT NOT NULL
                                                   );
                                                   """;

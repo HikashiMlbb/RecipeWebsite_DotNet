@@ -7,6 +7,8 @@ using Dapper.Transaction;
 using Domain.RecipeEntity;
 using Domain.UserEntity;
 using Persistence.Repositories.Dto;
+using Z.Dapper.Plus;
+
 // ReSharper disable RedundantAnonymousTypePropertyName
 
 namespace Persistence.Repositories;
@@ -26,11 +28,6 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
                                  RETURNING Id;
                                  """;
 
-        const string ingredientSql = """
-                                     INSERT INTO Ingredients (Recipe_Id, Name, Count, Unit)
-                                     VALUES (@RecipeId, @Name, @Count, @Unit);
-                                     """;
-        
         var recipeId = await transaction.QueryFirstAsync<int>(recipeSql, new
         {
             UserId = newRecipe.Author.Id.Value,
@@ -44,15 +41,14 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
             Rating = 0,
             Votes = 0
         });
-
-        foreach (var ingredient in newRecipe.Ingredients)
-            await transaction.ExecuteAsync(ingredientSql, new
-            {
-                RecipeId = recipeId,
-                ingredient.Name,
-                ingredient.Count,
-                Unit = ingredient.UnitType.ToString()
-            });
+        
+        await transaction.UseBulkOptions(x => x.DestinationTableName = "ingredients").BulkInsertAsync(newRecipe.Ingredients.Select(x => new
+        {
+            Recipe_Id = recipeId,
+            Name = x.Name,
+            Count = x.Count,
+            Unit = x.UnitType.ToString()
+        }));
 
         await transaction.CommitAsync();
 
@@ -97,8 +93,6 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
                            """;
 
         RecipeDatabaseDto? detailedDto = null;
-
-        var test = await db.QueryAsync(sql, new { Id = recipeId.Value });
 
         var result = 
             (await db.QueryAsync<RecipeDatabaseDto, RecipeAuthorDto, IngredientDatabaseDto?, CommentDatabaseDto?, CommentAuthorDto, RecipeDatabaseDto>(
@@ -332,21 +326,16 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         if (updateConfig.Ingredients is { } ingredients)
         {
             const string deleteIngredientsSql = "DELETE FROM Ingredients WHERE Recipe_Id = @RecipeId;";
-            const string insertIngredientBeginning = """
-                                                     INSERT INTO Ingredients (Id, Recipe_Id, Name, Count, Unit)
-                                                     VALUES (DEFAULT, @RecipeId, @Name, @Count, @Unit);
-                                                     """;
 
             await db.ExecuteAsync(deleteIngredientsSql, new { RecipeId = updateConfig.RecipeId.Value });
 
-            foreach (var ingredient in ingredients)
-                await db.ExecuteAsync(insertIngredientBeginning, new
-                {
-                    RecipeId = updateConfig.RecipeId.Value,
-                    ingredient.Name,
-                    ingredient.Count,
-                    Unit = ingredient.UnitType.ToString()
-                });
+            await db.UseBulkOptions(x => x.DestinationTableName = "ingredients").BulkInsertAsync(ingredients.Select(x => new
+            {
+                Recipe_Id = updateConfig.RecipeId.Value,
+                Name = x.Name,
+                Count = x.Count,
+                Unit = x.UnitType.ToString()
+            }));
         }
 
         await transaction.CommitAsync();
