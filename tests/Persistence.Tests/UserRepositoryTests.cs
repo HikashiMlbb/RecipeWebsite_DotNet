@@ -103,10 +103,10 @@ public class UserRepositoryTests : IAsyncLifetime
         _repository = new UserRepository(new DapperConnectionFactory(_container.GetConnectionString()));
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
-        await db.ExecuteAsync("INSERT INTO Users VALUES (5, @username, @password, 'classic')", new
+        await db.ExecuteAsync("INSERT INTO \"Users\" VALUES (5, @Username, @Password, 'classic')", new
         {
-            username = username.Value,
-            password = password.PasswordHash
+            Username = username.Value,
+            Password = password.PasswordHash
         });
 
         // Act

@@ -14,7 +14,7 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
         await using var db = dbFactory.Create();
         await db.OpenAsync();
 
-        const string sql = "SELECT Id AS UserId, Password FROM Users WHERE Username = @Username;";
+        const string sql = "SELECT \"Id\" AS \"UserId\", \"Password\" FROM \"Users\" WHERE \"Username\" = @Username;";
 
         var result = await db.QueryAsync<UserDatabaseDto>(sql, new
         {
