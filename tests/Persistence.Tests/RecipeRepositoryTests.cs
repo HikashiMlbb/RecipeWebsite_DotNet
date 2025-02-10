@@ -1062,10 +1062,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (101, 'Username1', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (501, 101, 'T1', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
                                      (502, 101, 'T2', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
                                      (503, 101, 'T3', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
@@ -1098,10 +1098,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (101, 'Username1', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (501, 101, 'Brazilian Soup', 'D', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
                                      (502, 101, 'Australian Soup', 'D', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
                                      (503, 101, 'Russian Soup', 'D', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
@@ -1135,10 +1135,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (101, 'Username1', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (501, 101, 'Brazilian Soup', 'Some recipe for soup from Brazil', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
                                      (502, 101, 'Australian Soup', 'Some recipe for soup from Australia', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
                                      (503, 101, 'Russian Soup', 'Some recipe for soup from Russia', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),
@@ -1172,10 +1172,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (101, 'Username1', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (501, 101, 'Brazilian Soup key', 'Some recipe for soup from Brazil key', 'I', 'IMG', 'easy', '2023-05-01 13:13:15+00', '2h', 0, 0),
                                      (502, 101, 'Australian Soup key', 'Some recipe for soup from Australia', 'I', 'IMG', 'easy', '2022-05-01 13:13:15+00', '2h', 0, 0),
                                      (503, 101, 'Russian Soup', 'Some recipe for soup from Russia key', 'I', 'IMG', 'easy', '2021-05-01 13:13:15+00', '2h', 0, 0),

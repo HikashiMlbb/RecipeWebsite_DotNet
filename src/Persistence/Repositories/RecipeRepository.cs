@@ -253,18 +253,18 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
 
         const string sql = """
                            SELECT
-                                Id AS RecipeId,
-                                Title,
-                                Image_Name AS ImageName,
-                                Difficulty,
-                                Cooking_Time AS CookingTime,
-                                Rating,
-                                Votes
-                           FROM Recipes
-                           WHERE LOWER(Title) LIKE LOWER(@Query) OR LOWER(Description) LIKE LOWER(@Query)
+                                "Id" AS "RecipeId",
+                                "Title",
+                                "ImageName",
+                                "Difficulty",
+                                "CookingTime",
+                                "Rating",
+                                "Votes"
+                           FROM "Recipes"
+                           WHERE LOWER("Title") LIKE LOWER(@Query) OR LOWER("Description") LIKE LOWER(@Query)
                            ORDER BY 
                                CASE
-                                   WHEN LOWER(Title) LIKE LOWER(@Query) THEN 1
+                                   WHEN LOWER("Title") LIKE LOWER(@Query) THEN 1
                                    ELSE 2
                                END;
                            """;
