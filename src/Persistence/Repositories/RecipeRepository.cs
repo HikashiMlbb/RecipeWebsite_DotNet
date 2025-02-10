@@ -176,7 +176,7 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         await db.OpenAsync();
 
         const string sql = """
-                           INSERT INTO Comments (Id, Recipe_Id, User_Id, Content, Published_At)
+                           INSERT INTO "Comments" ("Id", "RecipeId", "UserId", "Content", "PublishedAt")
                            VALUES (DEFAULT, @RecipeId, @UserId, @Content, @PublishedAt);
                            """;
         await db.ExecuteAsync(sql, new

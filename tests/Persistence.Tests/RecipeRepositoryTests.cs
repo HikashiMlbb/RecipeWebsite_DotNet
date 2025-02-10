@@ -526,10 +526,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (@UserId, 'Pavel', 'SomePassword', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (@RecipeId, @UserId, 'T', 'D', 'I', 'IMG', 'hard', now(), '2h', 0, 0);
                               """, new
         {
@@ -544,7 +544,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await _repo.CommentAsync(recipeId, comment);
         var (commentRecipeId, commentAuthorId, content, publicationDate) =
             await db.QueryFirstAsync<(int, int, string, DateTimeOffset)>(
-                "SELECT Recipe_Id, User_Id, Content, Published_At FROM Comments;");
+                "SELECT \"RecipeId\", \"UserId\", \"Content\", \"PublishedAt\" FROM \"Comments\";");
 
         #endregion
 
