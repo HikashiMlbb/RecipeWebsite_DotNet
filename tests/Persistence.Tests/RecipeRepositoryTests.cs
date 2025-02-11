@@ -1210,10 +1210,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (4, 'Username', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (15, 4, 'Title', 'Description', 'Instruction', 'Image Name', 'hard', now(), '2h', 0, 0);
                               """);
 
@@ -1222,7 +1222,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         #region Act
 
         await _repo.UpdateAsync(updateConfig);
-        var title = await db.QueryFirstAsync<string>("SELECT Title FROM Recipes WHERE Id = 15");
+        var title = await db.QueryFirstAsync<string>("SELECT \"Title\" FROM \"Recipes\" WHERE \"Id\" = 15");
 
         #endregion
 
@@ -1251,10 +1251,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (4, 'Username', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (15, 4, 'Title', 'Description', 'Instruction', 'Image Name', 'hard', now(), '2h', 0, 0);
                               """);
 
@@ -1265,7 +1265,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await _repo.UpdateAsync(updateConfig);
         var (title, description, instruction, imageName, difficulty, cookingTime) =
             await db.QueryFirstAsync<(string, string, string, string, string, TimeSpan)>(
-                "SELECT Title, Description, Instruction, Image_Name, Difficulty, Cooking_Time FROM Recipes WHERE Id = 15");
+                "SELECT \"Title\", \"Description\", \"Instruction\", \"ImageName\", \"Difficulty\", \"CookingTime\" FROM \"Recipes\" WHERE \"Id\" = 15");
 
         #endregion
 
@@ -1292,13 +1292,13 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (4, 'Username', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (15, 4, 'Title', 'Description', 'Instruction', 'Image Name', 'hard', now(), '2h', 0, 0);
 
-                              INSERT INTO Ingredients (Id, Recipe_Id, Name, Count, Unit)
+                              INSERT INTO "Ingredients" ("Id", "RecipeId", "Name", "Count", "Unit")
                               VALUES (DEFAULT, 15, 'Coconut', 5, 'pieces'),
                                      (DEFAULT, 15, 'Milk', 300, 'milliliters'),
                                      (DEFAULT, 15, 'Sugar', 15, 'grams');
@@ -1309,7 +1309,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         #region Act
 
         await _repo.UpdateAsync(updateConfig);
-        var ingredientCount = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Ingredients WHERE Recipe_Id = 15;");
+        var ingredientCount = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM \"Ingredients\" WHERE \"RecipeId\" = 15;");
 
         #endregion
 
@@ -1338,13 +1338,13 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (4, 'Username', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (15, 4, 'Title', 'Description', 'Instruction', 'Image Name', 'hard', now(), '2h', 0, 0);
 
-                              INSERT INTO Ingredients (Id, Recipe_Id, Name, Count, Unit)
+                              INSERT INTO "Ingredients" ("Id", "RecipeId", "Name", "Count", "Unit")
                               VALUES (DEFAULT, 15, 'Water', 1500, 'milliliters'),
                                      (DEFAULT, 15, 'Salt', 15, 'grams');
                               """);
@@ -1354,7 +1354,7 @@ public class RecipeRepositoryTests : IAsyncLifetime
         #region Act
 
         await _repo.UpdateAsync(updateConfig);
-        var ingredientCount = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Ingredients WHERE Recipe_Id = 15;");
+        var ingredientCount = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM \"Ingredients\" WHERE \"RecipeId\" = 15;");
 
         #endregion
 

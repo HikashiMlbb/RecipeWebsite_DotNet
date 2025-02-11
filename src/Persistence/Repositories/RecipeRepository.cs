@@ -291,21 +291,21 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         await db.OpenAsync();
 
         const string sqlBeginning = """
-                                    UPDATE Recipes
+                                    UPDATE "Recipes"
                                     SET
                                     """;
-        const string sqlEnding = "WHERE Id = @RecipeId;";
+        const string sqlEnding = "WHERE \"Id\" = @RecipeId;";
 
         var sqlBuilder = new StringBuilder();
         sqlBuilder.Append(sqlBeginning);
-        sqlBuilder.Append("\n\tId = @RecipeId");
+        sqlBuilder.Append("\"Id\" = @RecipeId");
 
-        if (updateConfig.Title is not null) sqlBuilder.Append(",\n\tTitle = @Title");
-        if (updateConfig.Description is not null) sqlBuilder.Append(",\n\tDescription = @Description");
-        if (updateConfig.Instruction is not null) sqlBuilder.Append(",\n\tInstruction = @Instruction");
-        if (updateConfig.ImageName is not null) sqlBuilder.Append(",\n\tImage_Name = @ImageName");
-        if (updateConfig.Difficulty is not null) sqlBuilder.Append(",\n\tDifficulty = @Difficulty");
-        if (updateConfig.CookingTime is not null) sqlBuilder.Append(",\n\tCooking_Time = @CookingTime");
+        if (updateConfig.Title is not null) sqlBuilder.Append(",\"Title\" = @Title");
+        if (updateConfig.Description is not null) sqlBuilder.Append(",\"Description\" = @Description");
+        if (updateConfig.Instruction is not null) sqlBuilder.Append(",\"Instruction\" = @Instruction");
+        if (updateConfig.ImageName is not null) sqlBuilder.Append(",\"ImageName\" = @ImageName");
+        if (updateConfig.Difficulty is not null) sqlBuilder.Append(",\"Difficulty\" = @Difficulty");
+        if (updateConfig.CookingTime is not null) sqlBuilder.Append(",\"CookingTime\" = @CookingTime");
 
         sqlBuilder.Append('\n' + sqlEnding);
 
@@ -324,13 +324,13 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
 
         if (updateConfig.Ingredients is { } ingredients)
         {
-            const string deleteIngredientsSql = "DELETE FROM Ingredients WHERE Recipe_Id = @RecipeId;";
+            const string deleteIngredientsSql = "DELETE FROM \"Ingredients\" WHERE \"RecipeId\" = @RecipeId;";
 
             await db.ExecuteAsync(deleteIngredientsSql, new { RecipeId = updateConfig.RecipeId.Value });
 
-            await db.UseBulkOptions(x => x.DestinationTableName = "ingredients").BulkInsertAsync(ingredients.Select(x => new
+            await db.UseBulkOptions(x => x.DestinationTableName = "Ingredients").BulkInsertAsync(ingredients.Select(x => new
             {
-                Recipe_Id = updateConfig.RecipeId.Value,
+                RecipeId = updateConfig.RecipeId.Value,
                 Name = x.Name,
                 Count = x.Count,
                 Unit = x.UnitType.ToString()
