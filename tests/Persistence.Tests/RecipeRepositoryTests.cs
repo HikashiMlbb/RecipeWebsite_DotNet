@@ -1375,10 +1375,10 @@ public class RecipeRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync("""
-                              INSERT INTO Users (Id, Username, Password, Role)
+                              INSERT INTO "Users" ("Id", "Username", "Password", "Role")
                               VALUES (4, 'Username', 'Password', 'classic');
 
-                              INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                              INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                               VALUES (15, 4, 'Title', 'Description', 'Instruction', 'Image Name', 'hard', now(), '2h', 0, 0);
                               """);
 
@@ -1386,9 +1386,9 @@ public class RecipeRepositoryTests : IAsyncLifetime
 
         #region Act
 
-        var userRecipesCountBefore = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Recipes WHERE Author_Id = 4;");
+        var userRecipesCountBefore = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM \"Recipes\" WHERE \"AuthorId\" = 4;");
         await _repo.DeleteAsync(new RecipeId(15));
-        var userRecipesCountAfter = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Recipes WHERE Author_Id = 4;");
+        var userRecipesCountAfter = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM \"Recipes\" WHERE \"AuthorId\" = 4;");
 
         #endregion
 

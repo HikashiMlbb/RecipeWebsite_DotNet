@@ -345,7 +345,7 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         await using var db = factory.Create();
         await db.OpenAsync();
 
-        const string sql = "DELETE FROM Recipes WHERE Id = @Id;";
+        const string sql = "DELETE FROM \"Recipes\" WHERE \"Id\" = @Id;";
         await db.ExecuteAsync(sql, new { Id = recipeId.Value });
     }
 }
