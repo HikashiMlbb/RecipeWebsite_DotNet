@@ -22,9 +22,9 @@ public class UserUpdate
 
         if (user is null) return UserErrors.UserIdNotFound;
 
-        var verifyResult = await _passwordService.VerifyAsync(dto.OldPassword, user.Password);
-
-        if (!verifyResult) return UserErrors.PasswordIsIncorrect;
+        if (dto.OldPassword is null
+            || dto.NewPassword is null
+            || !await _passwordService.VerifyAsync(dto.OldPassword, user.Password)) return UserErrors.PasswordIsIncorrect;
 
         var newHashedPassword = await _passwordService.CreateAsync(dto.NewPassword);
         await _repo.UpdatePasswordAsync(userId, newHashedPassword);
