@@ -1,6 +1,11 @@
 # Created by https://www.toptal.com/developers/gitignore/api/rider,dotnetcore
 # Edit at https://www.toptal.com/developers/gitignore?templates=rider,dotnetcore
 
+.env
+RecipeWebsiteDotNet.sln.DotSettings.user
+requests/
+static/
+
 ### DotnetCore ###
 # .NET Core build folders
 bin/
@@ -15,11 +20,7 @@ obj/
 # Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
 # User-specific stuff
-.idea/**/workspace.xml
-.idea/**/tasks.xml
-.idea/**/usage.statistics.xml
-.idea/**/dictionaries
-.idea/**/shelf
+.idea
 
 # AWS User-specific
 .idea/**/aws.xml

@@ -1,0 +1,9 @@
+Dockerfile
+RecipeWebsiteDotNet.sln.*
+.env
+.git/
+.gitignore
+.idea/
+example.env
+requests/
+
