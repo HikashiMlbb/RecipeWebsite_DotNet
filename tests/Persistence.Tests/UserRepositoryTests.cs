@@ -49,7 +49,7 @@ public class UserRepositoryTests : IAsyncLifetime
 
         // Act
         var result = await _repository.InsertAsync(user);
-        var custom = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Users;");
+        var custom = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM \"Users\";");
 
         // Assert
         Assert.True(custom == 1);
@@ -70,7 +70,7 @@ public class UserRepositoryTests : IAsyncLifetime
         // Act
         var resultSuccess = await _repository.InsertAsync(user);
         var resultFailure = await _repository.InsertAsync(user);
-        var custom = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM Users;");
+        var custom = await db.QueryFirstAsync<int>("SELECT COUNT(*) FROM \"Users\";");
 
         // Assert
         Assert.True(custom == 1);
@@ -103,10 +103,10 @@ public class UserRepositoryTests : IAsyncLifetime
         _repository = new UserRepository(new DapperConnectionFactory(_container.GetConnectionString()));
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
-        await db.ExecuteAsync("INSERT INTO Users VALUES (5, @username, @password, 'classic')", new
+        await db.ExecuteAsync("INSERT INTO \"Users\" VALUES (5, @Username, @Password, 'classic')", new
         {
-            username = username.Value,
-            password = password.PasswordHash
+            Username = username.Value,
+            Password = password.PasswordHash
         });
 
         // Act
@@ -144,10 +144,10 @@ public class UserRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync(
-            "INSERT INTO Users (Id, Username, Password, Role) VALUES (@Id, @Username, @Password, @Role);", new
+            "INSERT INTO \"Users\" (\"Id\", \"Username\", \"Password\", \"Role\") VALUES (@Id, @Username, @Password, @Role);", new
             {
                 Id = userId.Value,
-                Username = username.Value!,
+                Username = username.Value,
                 Password = password.PasswordHash,
                 Role = UserRole.Classic.ToString()
             });
@@ -182,7 +182,7 @@ public class UserRepositoryTests : IAsyncLifetime
         await db.OpenAsync();
 
         await db.ExecuteAsync(
-            "INSERT INTO Users (Id, Username, Password, Role) VALUES (@Id, @Username, @Password, @Role);", new
+            "INSERT INTO \"Users\" (\"Id\", \"Username\", \"Password\", \"Role\") VALUES (@Id, @Username, @Password, @Role);", new
             {
                 Id = userId.Value,
                 Username = username.Value!,
@@ -191,7 +191,7 @@ public class UserRepositoryTests : IAsyncLifetime
             });
 
         await db.ExecuteAsync(
-            "INSERT INTO Recipes VALUES (@Id, @AuthorId, @Title, @Description, @Instruction, @ImageName, @Difficulty, @PublishedAt, @CookingTime, @Rating, @Votes);",
+            "INSERT INTO \"Recipes\" VALUES (@Id, @AuthorId, @Title, @Description, @Instruction, @ImageName, @Difficulty, @PublishedAt, @CookingTime, @Rating, @Votes);",
             new
             {
                 Id = recipeId.Value,
@@ -238,7 +238,7 @@ public class UserRepositoryTests : IAsyncLifetime
         _repository = new UserRepository(new DapperConnectionFactory(_container.GetConnectionString()));
         await using var db = new DapperConnectionFactory(_container.GetConnectionString()).Create();
         await db.OpenAsync();
-        await db.ExecuteAsync("INSERT INTO Users VALUES (@UserId, 'Vasyan', '$omeHa$hedPa$$w0rd', 'classic');",
+        await db.ExecuteAsync("INSERT INTO \"Users\" VALUES (@UserId, 'Vasyan', '$omeHa$hedPa$$w0rd', 'classic');",
             new { UserId = userId.Value });
 
         #endregion
@@ -246,7 +246,7 @@ public class UserRepositoryTests : IAsyncLifetime
         #region Act
 
         await _repository.UpdatePasswordAsync(new UserId(6), new Password("$0m3_=+=_@n0th3r_=+=_h@$hed_=+=_p@$$w0rd"));
-        var result = await db.QuerySingleAsync<string>("SELECT Password FROM Users;");
+        var result = await db.QuerySingleAsync<string>("SELECT \"Password\" FROM \"Users\";");
 
         #endregion
 

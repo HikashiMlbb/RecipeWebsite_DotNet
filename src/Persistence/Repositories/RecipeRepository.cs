@@ -23,9 +23,9 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         await using var transaction = await db.BeginTransactionAsync();
 
         const string recipeSql = """
-                                 INSERT INTO Recipes (Id, Author_Id, Title, Description, Instruction, Image_Name, Difficulty, Published_At, Cooking_Time, Rating, Votes)
+                                 INSERT INTO "Recipes" ("Id", "AuthorId", "Title", "Description", "Instruction", "ImageName", "Difficulty", "PublishedAt", "CookingTime", "Rating", "Votes")
                                  VALUES (DEFAULT, @UserId, @Title, @Description, @Instruction, @ImageName, @Difficulty, @PublishedAt, @CookingTime, @Rating, @Votes)
-                                 RETURNING Id;
+                                 RETURNING "Id";
                                  """;
 
         var recipeId = await transaction.QueryFirstAsync<int>(recipeSql, new
@@ -42,9 +42,9 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
             Votes = 0
         });
         
-        await transaction.UseBulkOptions(x => x.DestinationTableName = "ingredients").BulkInsertAsync(newRecipe.Ingredients.Select(x => new
+        await transaction.UseBulkOptions(x => x.DestinationTableName = "Ingredients").BulkInsertAsync(newRecipe.Ingredients.Select(x => new
         {
-            Recipe_Id = recipeId,
+            RecipeId = recipeId,
             Name = x.Name,
             Count = x.Count,
             Unit = x.UnitType.ToString()
@@ -62,34 +62,33 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
 
         const string sql = """
                            SELECT 
-                                recipes.Id AS RecipeId,
-                                recipes.Title,
-                                recipes.Description,
-                                recipes.Instruction,
-                                recipes.Image_Name AS ImageName,
-                                recipes.Difficulty,
-                                recipes.Published_At AS PublishedAt,
-                                recipes.Cooking_Time AS CookingTime,
-                                recipes.Rating,
-                                recipes.Votes,
-                                recipe_author.Id AS AuthorId,
-                                recipe_author.Username AS AuthorUsername,
-                                ingredients.Id AS IngredientId,
-                                ingredients.Name,
-                                ingredients.Count,
-                                ingredients.Unit AS UnitType,
-                                comments.Id AS CommentId,
-                                comments.Recipe_Id AS CommentSplit,
-                                comments.Content AS Content,
-                                comments.Published_At AS CommentPublishedAt,
-                                comment_author.Id AS CommentAuthorId,
-                                comment_author.Username AS CommentAuthorUsername
-                           FROM Recipes recipes
-                           LEFT OUTER JOIN Users recipe_author ON recipe_author.Id = recipes.Author_Id
-                           LEFT OUTER JOIN Ingredients ingredients ON ingredients.Recipe_Id = recipes.Id
-                           LEFT OUTER JOIN Comments comments ON comments.Recipe_Id = recipes.Id
-                           LEFT OUTER JOIN Users comment_author ON comment_author.Id = comments.User_Id
-                           WHERE recipes.Id = @Id;
+                                recipes."Id" AS "RecipeId",
+                                recipes."Title",
+                                recipes."Description",
+                                recipes."Instruction",
+                                recipes."ImageName",
+                                recipes."Difficulty",
+                                recipes."PublishedAt",
+                                recipes."CookingTime",
+                                recipes."Rating",
+                                recipes."Votes",
+                                recipe_author."Id" AS "AuthorId",
+                                recipe_author."Username" AS "AuthorUsername",
+                                ingredients."Id" AS "IngredientId",
+                                ingredients."Name",
+                                ingredients."Count",
+                                ingredients."Unit" AS "UnitType",
+                                comments."Id" AS "CommentId",
+                                comments."Content",
+                                comments."PublishedAt" AS "CommentPublishedAt",
+                                comment_author."Id" AS "CommentAuthorId",
+                                comment_author."Username" AS "CommentAuthorUsername"
+                           FROM "Recipes" recipes
+                           LEFT OUTER JOIN "Users" recipe_author ON recipe_author."Id" = recipes."AuthorId"
+                           LEFT OUTER JOIN "Ingredients" ingredients ON ingredients."RecipeId" = recipes."Id"
+                           LEFT OUTER JOIN "Comments" comments ON comments."RecipeId" = recipes."Id"
+                           LEFT OUTER JOIN "Users" comment_author ON comment_author."Id" = comments."UserId"
+                           WHERE recipes."Id" = @Id;
                            """;
 
         RecipeDatabaseDto? detailedDto = null;
@@ -159,7 +158,7 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         await using var db = factory.Create();
         await db.OpenAsync();
 
-        const string sql = "SELECT Rate_Recipe(@RecipeId, @UserId, @Rate)";
+        const string sql = "SELECT \"RateRecipe\"(@RecipeId, @UserId, @Rate)";
 
         var newRate = await db.QueryFirstAsync<int>(sql, new
         {
@@ -177,7 +176,7 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         await db.OpenAsync();
 
         const string sql = """
-                           INSERT INTO Comments (Id, Recipe_Id, User_Id, Content, Published_At)
+                           INSERT INTO "Comments" ("Id", "RecipeId", "UserId", "Content", "PublishedAt")
                            VALUES (DEFAULT, @RecipeId, @UserId, @Content, @PublishedAt);
                            """;
         await db.ExecuteAsync(sql, new
@@ -196,14 +195,14 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
 
         const string sqlBeginning = """
                                     SELECT
-                                         Id AS RecipeId,
-                                         Title,
-                                         Image_Name AS ImageName,
-                                         Difficulty,
-                                         Cooking_Time AS CookingTime,
-                                         Rating,
-                                         Votes
-                                    FROM Recipes
+                                         "Id" AS "RecipeId",
+                                         "Title",
+                                         "ImageName",
+                                         "Difficulty",
+                                         "CookingTime",
+                                         "Rating",
+                                         "Votes"
+                                    FROM "Recipes"
 
                                     """;
 
@@ -215,11 +214,11 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
 
         const string popular = """
                                ORDER BY
-                                    Votes DESC,
-                                    Rating DESC
+                                    "Votes" DESC,
+                                    "Rating" DESC
                                """;
 
-        const string newest = "ORDER BY Published_At DESC";
+        const string newest = "ORDER BY \"PublishedAt\" DESC";
 
         var chosenSort = sortType switch
         {
@@ -254,18 +253,18 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
 
         const string sql = """
                            SELECT
-                                Id AS RecipeId,
-                                Title,
-                                Image_Name AS ImageName,
-                                Difficulty,
-                                Cooking_Time AS CookingTime,
-                                Rating,
-                                Votes
-                           FROM Recipes
-                           WHERE LOWER(Title) LIKE LOWER(@Query) OR LOWER(Description) LIKE LOWER(@Query)
+                                "Id" AS "RecipeId",
+                                "Title",
+                                "ImageName",
+                                "Difficulty",
+                                "CookingTime",
+                                "Rating",
+                                "Votes"
+                           FROM "Recipes"
+                           WHERE LOWER("Title") LIKE LOWER(@Query) OR LOWER("Description") LIKE LOWER(@Query)
                            ORDER BY 
                                CASE
-                                   WHEN LOWER(Title) LIKE LOWER(@Query) THEN 1
+                                   WHEN LOWER("Title") LIKE LOWER(@Query) THEN 1
                                    ELSE 2
                                END;
                            """;
@@ -292,21 +291,21 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         await db.OpenAsync();
 
         const string sqlBeginning = """
-                                    UPDATE Recipes
+                                    UPDATE "Recipes"
                                     SET
                                     """;
-        const string sqlEnding = "WHERE Id = @RecipeId;";
+        const string sqlEnding = "WHERE \"Id\" = @RecipeId;";
 
         var sqlBuilder = new StringBuilder();
         sqlBuilder.Append(sqlBeginning);
-        sqlBuilder.Append("\n\tId = @RecipeId");
+        sqlBuilder.Append("\"Id\" = @RecipeId");
 
-        if (updateConfig.Title is not null) sqlBuilder.Append(",\n\tTitle = @Title");
-        if (updateConfig.Description is not null) sqlBuilder.Append(",\n\tDescription = @Description");
-        if (updateConfig.Instruction is not null) sqlBuilder.Append(",\n\tInstruction = @Instruction");
-        if (updateConfig.ImageName is not null) sqlBuilder.Append(",\n\tImage_Name = @ImageName");
-        if (updateConfig.Difficulty is not null) sqlBuilder.Append(",\n\tDifficulty = @Difficulty");
-        if (updateConfig.CookingTime is not null) sqlBuilder.Append(",\n\tCooking_Time = @CookingTime");
+        if (updateConfig.Title is not null) sqlBuilder.Append(",\"Title\" = @Title");
+        if (updateConfig.Description is not null) sqlBuilder.Append(",\"Description\" = @Description");
+        if (updateConfig.Instruction is not null) sqlBuilder.Append(",\"Instruction\" = @Instruction");
+        if (updateConfig.ImageName is not null) sqlBuilder.Append(",\"ImageName\" = @ImageName");
+        if (updateConfig.Difficulty is not null) sqlBuilder.Append(",\"Difficulty\" = @Difficulty");
+        if (updateConfig.CookingTime is not null) sqlBuilder.Append(",\"CookingTime\" = @CookingTime");
 
         sqlBuilder.Append('\n' + sqlEnding);
 
@@ -325,13 +324,13 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
 
         if (updateConfig.Ingredients is { } ingredients)
         {
-            const string deleteIngredientsSql = "DELETE FROM Ingredients WHERE Recipe_Id = @RecipeId;";
+            const string deleteIngredientsSql = "DELETE FROM \"Ingredients\" WHERE \"RecipeId\" = @RecipeId;";
 
             await db.ExecuteAsync(deleteIngredientsSql, new { RecipeId = updateConfig.RecipeId.Value });
 
-            await db.UseBulkOptions(x => x.DestinationTableName = "ingredients").BulkInsertAsync(ingredients.Select(x => new
+            await db.UseBulkOptions(x => x.DestinationTableName = "Ingredients").BulkInsertAsync(ingredients.Select(x => new
             {
-                Recipe_Id = updateConfig.RecipeId.Value,
+                RecipeId = updateConfig.RecipeId.Value,
                 Name = x.Name,
                 Count = x.Count,
                 Unit = x.UnitType.ToString()
@@ -346,7 +345,7 @@ public class RecipeRepository(DapperConnectionFactory factory) : IRecipeReposito
         await using var db = factory.Create();
         await db.OpenAsync();
 
-        const string sql = "DELETE FROM Recipes WHERE Id = @Id;";
+        const string sql = "DELETE FROM \"Recipes\" WHERE \"Id\" = @Id;";
         await db.ExecuteAsync(sql, new { Id = recipeId.Value });
     }
 }

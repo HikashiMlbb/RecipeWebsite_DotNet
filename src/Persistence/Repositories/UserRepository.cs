@@ -14,7 +14,7 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
         await using var db = dbFactory.Create();
         await db.OpenAsync();
 
-        const string sql = "SELECT Id AS UserId, Password FROM Users WHERE Username = @Username;";
+        const string sql = "SELECT \"Id\" AS \"UserId\", \"Password\" FROM \"Users\" WHERE \"Username\" = @Username;";
 
         var result = await db.QueryAsync<UserDatabaseDto>(sql, new
         {
@@ -36,10 +36,10 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
         await db.OpenAsync();
 
         const string sql = """
-                           INSERT INTO Users (Id, Username, Password, Role) 
+                           INSERT INTO "Users" ("Id", "Username", "Password", "Role") 
                            VALUES (DEFAULT, @Username, @Password, @Role) 
-                           ON CONFLICT (Username) DO NOTHING
-                           RETURNING Id;
+                           ON CONFLICT ("Username") DO NOTHING
+                           RETURNING "Id";
                            """;
         var result = await db.QueryFirstOrDefaultAsync<int>(sql, new
         {
@@ -61,23 +61,23 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
 
         const string sql = """
                            SELECT
-                                users.Id AS UserId,
-                                users.Username,
-                                users.Password,
-                                users.Role,
-                                recipes.Id AS RecipeId,
-                                recipes.Title,
-                                recipes.Image_Name AS ImageName,
-                                recipes.Difficulty,
-                                recipes.Cooking_Time AS CookingTime,
-                                recipes.Rating,
-                                recipes.Votes
-                           FROM Users users
-                           LEFT OUTER JOIN Recipes recipes ON recipes.Author_Id = users.Id
-                           WHERE users.Id = @Id
+                                users."Id" AS "UserId",
+                                users."Username",
+                                users."Password",
+                                users."Role",
+                                recipes."Id" AS "RecipeId",
+                                recipes."Title",
+                                recipes."ImageName",
+                                recipes."Difficulty",
+                                recipes."CookingTime",
+                                recipes."Rating",
+                                recipes."Votes"
+                           FROM "Users" users
+                           LEFT OUTER JOIN "Recipes" recipes ON recipes."AuthorId" = users."Id"
+                           WHERE users."Id" = @Id
                            ORDER BY 
-                               recipes.Votes DESC,
-                               recipes.Rating DESC;
+                               recipes."Votes" DESC,
+                               recipes."Rating" DESC;
                            """;
 
         var result = (await db.QueryAsync<UserDatabaseDto, RecipeDatabaseDto, UserDatabaseDto>(sql,
@@ -129,7 +129,7 @@ public class UserRepository(DapperConnectionFactory dbFactory) : IUserRepository
         await using var db = dbFactory.Create();
         await db.OpenAsync();
 
-        const string sql = "UPDATE Users SET Password = @Password WHERE Id = @Id";
+        const string sql = "UPDATE \"Users\" SET \"Password\" = @Password WHERE \"Id\" = @Id";
         await db.ExecuteAsync(sql, new
         {
             Password = newHashedPassword.PasswordHash,
