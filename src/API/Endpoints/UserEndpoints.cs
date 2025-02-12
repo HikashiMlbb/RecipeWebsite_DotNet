@@ -36,7 +36,7 @@ public static class UserEndpoints
         if (!loginResult.IsSuccess) return Results.Problem(statusCode: 401, title: loginResult.Error!.Code, detail: loginResult.Error.Description);
         
         context.Response.Cookies.Append(CookieConstants.CookieName, loginResult.Value!, cookieService.GetOptions());
-        return Results.Ok();
+        return Results.NoContent();
     }
 
     private static async Task<IResult> SignUp(
@@ -50,7 +50,7 @@ public static class UserEndpoints
         if (signUpResult.IsSuccess)
         {
             context.Response.Cookies.Append(CookieConstants.CookieName, signUpResult.Value!, cookieService.GetOptions());
-            return Results.Ok();
+            return Results.NoContent();
         }
         if (signUpResult.Error == UserErrors.UserAlreadyExists) return Results.Conflict(signUpResult.Error);
         if (signUpResult.Error == UserDomainErrors.UsernameUnallowedSymbols 
