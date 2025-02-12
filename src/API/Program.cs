@@ -144,6 +144,8 @@ var cookieSettings = new CookieSettings();
 builder.Configuration.GetSection(CookieSettings.Section).Bind(cookieSettings);
 builder.Services.AddScoped(typeof(CookieService), _ => new CookieService(cookieSettings));
 
+builder.Services.AddScoped(typeof(FileService), _ => new FileService());
+
 #endregion
 
 var app = builder.Build();

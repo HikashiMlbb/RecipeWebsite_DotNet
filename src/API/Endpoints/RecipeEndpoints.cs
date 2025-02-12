@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using API.Poco;
+using API.Services;
 using Application.Recipes;
 using Application.Recipes.Comment;
 using Application.Recipes.Create;
@@ -40,6 +41,7 @@ public static class RecipeEndpoints
         [FromForm(Name = "image")] IFormFile imageFile,
         [FromServices] RecipeCreate recipeCreate, 
         [FromServices] IHostEnvironment env,
+        [FromServices] FileService fileService,
         HttpContext context)
     {
         var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
@@ -47,7 +49,7 @@ public static class RecipeEndpoints
         if (imageFile.Length == 0 || (!imageFile.FileName.EndsWith(".jpg") && !imageFile.FileName.EndsWith(".png"))) 
             return Results.BadRequest("File format is not recognized.");
         
-        var imageName = await SaveImage(imageFile, env.ContentRootPath);
+        var imageName = fileService.GenerateName(imageFile.FileName);
 
         var recipeCreateDto = new RecipeCreateDto(
             AuthorId: int.Parse(userId),
@@ -61,9 +63,10 @@ public static class RecipeEndpoints
         
         var result = await recipeCreate.CreateAsync(recipeCreateDto);
         
-         return result.IsSuccess 
-             ? Results.Ok(result.Value!.Value) 
-             : Results.BadRequest(result.Error);
+        if (!result.IsSuccess) Results.BadRequest(result.Error);
+
+        _ = fileService.SaveImage(imageFile, imageName, env.ContentRootPath);
+        return Results.Ok(result.Value!.Value);
     }
 
     [Authorize]
@@ -193,6 +196,7 @@ public static class RecipeEndpoints
         [FromForm]RecipeUpdateEndpointDto? dto,
         [FromForm(Name = "image")]IFormFile? image,
         [FromServices]RecipeUpdate recipeService,
+        [FromServices]FileService fileService,
         HttpContext context,
         IHostEnvironment env)
     {
@@ -206,7 +210,7 @@ public static class RecipeEndpoints
                 return Results.BadRequest("File format is not recognized.");
         }
         
-        var imageName = image is null ? null : await SaveImage(image, env.ContentRootPath);
+        var imageName = image is null ? null : fileService.GenerateName(image.FileName);
         
         var updateDto = new RecipeUpdateDto(
             RecipeId: recipeId,
@@ -221,7 +225,14 @@ public static class RecipeEndpoints
         
         var result = await recipeService.UpdateAsync(updateDto);
 
-        if (result.IsSuccess) return Results.Ok();
+        if (result.IsSuccess)
+        {
+            if (imageName is not null)
+            {
+                _ = fileService.SaveImage(image!, imageName, env.ContentRootPath);
+            }
+            return Results.Ok();
+        }
 
         if (result.Error == RecipeErrors.RecipeNotFound) return Results.NotFound();
         if (result.Error == RecipeErrors.UserIsNotAuthor) return Results.Forbid();
@@ -246,21 +257,5 @@ public static class RecipeEndpoints
             ? Results.NotFound()
             : Results.Forbid();
     }
-    #endregion
-
-    #region Private endpoint additional functional
-
-    private static async Task<string> SaveImage(IFormFile file, string root)
-    {
-        var imageName = Guid.NewGuid().ToString() + '.' + file.FileName.Split('.').Last();
-        
-        var directory = Path.Combine(root, "static");
-        Directory.CreateDirectory(directory);
-        await using var stream = File.Create(Path.Combine(directory, imageName));
-        await file.CopyToAsync(stream);
-
-        return imageName;
-    }
-
     #endregion
 }
