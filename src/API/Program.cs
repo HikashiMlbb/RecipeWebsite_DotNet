@@ -1,3 +1,4 @@
+using API.Constants;
 using API.Endpoints;
 using API.Options;
 using Application.Recipes;
@@ -62,6 +63,15 @@ builder.Configuration.GetSection(JwtSettings.Section).Bind(jwtSettings);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                ctx.Token = ctx.Request.Cookies[CookieConstants.CookieName];
+                return Task.CompletedTask;
+            }
+        };
+        
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
