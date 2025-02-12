@@ -1,6 +1,7 @@
 using API.Constants;
 using API.Endpoints;
 using API.Options;
+using API.Services;
 using Application.Recipes;
 using Application.Recipes.Comment;
 using Application.Recipes.Create;
@@ -134,6 +135,14 @@ var connectionString = builder.Configuration.GetValue<string>("DATABASE_CONNECTI
 builder.Services.AddScoped(typeof(DapperConnectionFactory), _ => new DapperConnectionFactory(connectionString));
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRecipeRepository, RecipeRepository>();
+
+#endregion
+
+#region Registration of API services
+
+var cookieSettings = new CookieSettings();
+builder.Configuration.GetSection(CookieSettings.Section).Bind(cookieSettings);
+builder.Services.AddScoped(typeof(CookieService), _ => new CookieService(cookieSettings));
 
 #endregion
 
