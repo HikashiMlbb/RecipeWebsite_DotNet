@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using API.Constants;
+using API.Services;
 using Application.Users.UseCases;
 using Application.Users.UseCases.GetById;
 using Application.Users.UseCases.Login;
@@ -24,21 +26,32 @@ public static class UserEndpoints
 
     #region Private Implementation of Endpoints
 
-    private static async Task<IResult> Login([FromBody]UserDto dto, [FromServices]UserLogin userLogin)
+    private static async Task<IResult> Login(
+        [FromBody]UserDto dto,
+        [FromServices]UserLogin userLogin,
+        [FromServices]CookieService cookieService,
+        HttpContext context)
     {
-        
         var loginResult = await userLogin.LoginAsync(dto);
-
-        return loginResult.IsSuccess
-            ? Results.Ok(loginResult.Value!)
-            : Results.Problem(statusCode: 401, title: loginResult.Error!.Code, detail: loginResult.Error.Description);
+        if (!loginResult.IsSuccess) return Results.Problem(statusCode: 401, title: loginResult.Error!.Code, detail: loginResult.Error.Description);
+        
+        context.Response.Cookies.Append(CookieConstants.CookieName, loginResult.Value!, cookieService.GetOptions());
+        return Results.NoContent();
     }
 
-    private static async Task<IResult> SignUp([FromBody]UserDto dto, [FromServices]UserRegister userRegister)
+    private static async Task<IResult> SignUp(
+        [FromBody]UserDto dto, 
+        [FromServices]UserRegister userRegister,
+        [FromServices]CookieService cookieService,
+        HttpContext context)
     {
         var signUpResult = await userRegister.RegisterAsync(dto);
 
-        if (signUpResult.IsSuccess) return Results.Ok(signUpResult.Value);
+        if (signUpResult.IsSuccess)
+        {
+            context.Response.Cookies.Append(CookieConstants.CookieName, signUpResult.Value!, cookieService.GetOptions());
+            return Results.NoContent();
+        }
         if (signUpResult.Error == UserErrors.UserAlreadyExists) return Results.Conflict(signUpResult.Error);
         if (signUpResult.Error == UserDomainErrors.UsernameUnallowedSymbols 
             || signUpResult.Error == UserDomainErrors.UsernameLengthOutOfRange
