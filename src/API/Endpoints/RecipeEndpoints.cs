@@ -247,20 +247,4 @@ public static class RecipeEndpoints
             : Results.Forbid();
     }
     #endregion
-
-    #region Private endpoint additional functional
-
-    private static async Task<string> SaveImage(IFormFile file, string root)
-    {
-        var imageName = Guid.NewGuid().ToString() + '.' + file.FileName.Split('.').Last();
-        
-        var directory = Path.Combine(root, "static");
-        Directory.CreateDirectory(directory);
-        await using var stream = File.Create(Path.Combine(directory, imageName));
-        await file.CopyToAsync(stream);
-
-        return imageName;
-    }
-
-    #endregion
 }
